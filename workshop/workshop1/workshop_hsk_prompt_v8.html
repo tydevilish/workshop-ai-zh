@@ -272,6 +272,83 @@
       font-weight: bold;
       margin-right: 8px;
     }
+
+    /* Lightbox Styles */
+    .img-clickable {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: block;
+      margin: 16px auto 8px;
+      background: white;
+    }
+    .img-clickable:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+    .img-caption {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .lightbox.active {
+      display: flex;
+    }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .lightbox-close:hover {
+      background: rgba(0, 0, 0, 0.9);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+    .image-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    @media (max-width: 768px) {
+      .image-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
@@ -363,6 +440,8 @@
     </div>
 
     <div class="check">✅ สิ่งที่ต้องได้: กล่องโค้ด JSON ที่แบ่งเป็น 3 หมวดชัดเจน กดปุ่ม "Copy" เตรียมไว้เลย</div>
+    <img src="picture/1.png" alt="JSON Data" class="img-clickable">
+    <div class="img-caption">ผลลัพธ์ที่ได้จาก AI จะเป็นกล่องโค้ด JSON ที่มีข้อมูลครบทั้ง 3 หมวด (ฟัง, อ่าน, เขียน) ให้กดคัดลอกเตรียมไว้เลย</div>
 
     <hr>
 
@@ -408,6 +487,27 @@
     <div class="check">✅ ลองนำโค้ดที่ได้ไปเซฟเป็นไฟล์ <code>exam.html</code> แล้วเปิดดู เราจะได้เว็บที่มีแท็บ 3
       หมวดแล้ว! (แต่พาร์ทฟังยังไม่มีเสียงนะ)</div>
 
+    <div class="image-grid">
+      <div>
+        <img src="picture/2.1mainpage.png" alt="Main Page" class="img-clickable">
+        <div class="img-caption">1. หน้าแรกสำหรับกรอกชื่อผู้สอบ</div>
+      </div>
+      <div>
+        <img src="picture/2.2listening.png" alt="Listening Tab" class="img-clickable">
+        <div class="img-caption">2. แท็บการฟัง (Listening) พร้อมตัวเลือก 4 ข้อ</div>
+      </div>
+      <div>
+        <img src="picture/2.3reading.png" alt="Reading Tab" class="img-clickable">
+        <div class="img-caption">3. แท็บการอ่าน (Reading)</div>
+      </div>
+      <div>
+        <img src="picture/2.4writing.png" alt="Writing Tab" class="img-clickable">
+        <div class="img-caption">4. แท็บการเขียน (Writing) พร้อมช่องให้พิมพ์ตอบ</div>
+      </div>
+    </div>
+    <img src="picture/2.5result.png" alt="Result" class="img-clickable" style="max-width: 50%;">
+    <div class="img-caption">5. โครงสร้างผลสอบเบื้องต้น</div>
+
     <hr>
 
     <h2>Step 3: ใส่ระบบเสียงและแผงควบคุม (Interactive Features)</h2>
@@ -438,6 +538,17 @@
     </div>
 
     <div class="check">✅ นำโค้ดไปเซฟทับไฟล์เดิม ลองเปิดแล้วเข้าหมวดการฟัง กดปุ่มเพื่อฟังเสียง AI พูดภาษาจีนได้เลย!</div>
+
+    <div class="image-grid">
+      <div>
+        <img src="picture/3.1addspeech.png" alt="Speech Button" class="img-clickable">
+        <div class="img-caption">เพิ่มปุ่ม "▶ ฟังเสียง" ในหมวดการฟัง เมื่อกดจะมีเสียงอ่านภาษาจีนออกมา</div>
+      </div>
+      <div>
+        <img src="picture/3.2panel.png" alt="Question Palette" class="img-clickable">
+        <div class="img-caption">เพิ่มแผงข้อสอบ (Palette) ช่วยให้ดูง่ายว่าข้อไหนทำแล้วหรือยังไม่ทำ</div>
+      </div>
+    </div>
 
     <hr>
 
@@ -473,6 +584,20 @@
 
     <div class="check">✅ สมบูรณ์แบบ! นำไปรันและทดสอบระบบทั้งหมดได้เลย</div>
 
+    <img src="picture/4.1timer.png" alt="Timer" class="img-clickable" style="max-width: 60%;">
+    <div class="img-caption">1. แถบจับเวลาถอยหลัง (Timer) ด้านบนจอ เมื่อหมดเวลาจะบังคับส่งข้อสอบอัตโนมัติ</div>
+    
+    <div class="image-grid">
+      <div>
+        <img src="picture/4.2result.png" alt="Result Screen" class="img-clickable">
+        <div class="img-caption">2. หน้าจอสรุปผลสอบ (Result) แยกคะแนนตามหมวดทักษะชัดเจน</div>
+      </div>
+      <div>
+        <img src="picture/4.3suggestion.png" alt="Suggestion" class="img-clickable">
+        <div class="img-caption">3. ระบบตรวจคำตอบ แสดงเฉลย และคำอธิบายจาก AI สำหรับข้อที่ทำผิด</div>
+      </div>
+    </div>
+
     <hr>
 
     <h2>กล่องเครื่องมือฉุกเฉิน (บรรทัดกู้ชีพ)</h2>
@@ -504,7 +629,41 @@
 
   </div>
 
+  <!-- Lightbox Modal -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close">&times;</button>
+    <img id="lightbox-img" src="" alt="Enlarged image">
+  </div>
+
   <script>
+    // Lightbox Logic
+    document.querySelectorAll('.img-clickable').forEach(function(img) {
+      img.addEventListener('click', function() {
+        document.getElementById('lightbox-img').src = this.src;
+        document.getElementById('lightbox').classList.add('active');
+        if (window.parent) {
+          window.parent.postMessage({ type: 'lightbox', action: 'open' }, '*');
+        }
+      });
+    });
+
+    document.getElementById('lightbox-close').addEventListener('click', function() {
+      document.getElementById('lightbox').classList.remove('active');
+      if (window.parent) {
+        window.parent.postMessage({ type: 'lightbox', action: 'close' }, '*');
+      }
+    });
+
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('active');
+        if (window.parent) {
+          window.parent.postMessage({ type: 'lightbox', action: 'close' }, '*');
+        }
+      }
+    });
+
+    // Copy Logic
     document.querySelectorAll('button.copy').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var el = document.getElementById(btn.dataset.target);

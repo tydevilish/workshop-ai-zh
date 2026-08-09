@@ -296,7 +296,7 @@
     </div>
 
     <!-- Full-viewport iframe -->
-    <iframe id="contentFrame" src="workshop/workshop_hsk_prompt_v8.html" title="Workshop"></iframe>
+    <iframe id="contentFrame" src="workshop/workshop1/workshop_hsk_prompt_v8.html" title="Workshop"></iframe>
 
     <!-- Loader -->
     <div class="loader" id="loader">
@@ -360,6 +360,21 @@
 
                 navigate(src);
             });
+        });
+
+        // Listen for lightbox open/close from iframe
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'lightbox') {
+                const veil = document.querySelector('.fade-veil');
+                const topbar = document.querySelector('.topbar');
+                if (e.data.action === 'open') {
+                    if (veil) veil.style.display = 'none';
+                    if (topbar) topbar.style.display = 'none';
+                } else if (e.data.action === 'close') {
+                    if (veil) veil.style.display = 'block';
+                    if (topbar) topbar.style.display = 'flex';
+                }
+            }
         });
     </script>
 </body>
