@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>เวิร์กช็อป: ปั้นเว็บข้อสอบ HSK ระบบ 3 ทักษะด้วย AI</title>
+  <style>
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_XBd.ttf") format("truetype");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: oklch(97.5% 0.022 326);
+      --surface: oklch(99% 0.012 327);
+      --surface-soft: oklch(95.5% 0.032 318);
+      --ink: oklch(30% 0.045 297);
+      --line: oklch(88% 0.035 310);
+      --muted: oklch(48% 0.04 300);
+      --action: oklch(61% 0.19 345);
+      --action-hover: oklch(54% 0.2 345);
+      --mint: oklch(90% 0.09 157);
+      --lilac: oklch(87% 0.095 298);
+      --shadow: oklch(78% 0.055 313 / .3);
+      --code-bg: oklch(26% 0.03 297);
+      --code-ink: oklch(92% 0.02 320);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'LINE Seed Sans TH', 'Leelawadee UI', -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+      line-height: 1.7;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 85px 20px 80px
+    }
+
+    @media (max-width: 768px) {
+      .wrap { padding-top: 32px; padding-bottom: 90px }
+    }
+
+    /* Custom Scrollbar matching workshop background */
+    ::-webkit-scrollbar { width: 14px; height: 14px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border: 4px solid var(--bg);
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    h1 {
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      line-height: 1.25;
+      margin: 0 0 8px;
+      letter-spacing: -.02em
+    }
+
+    h2 {
+      font-size: clamp(1.25rem, 3vw, 1.6rem);
+      margin: 48px 0 12px;
+      letter-spacing: -.015em
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 24px 0 8px
+    }
+
+    p {
+      margin: 0 0 12px
+    }
+
+    a {
+      color: var(--action)
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 24px
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 1.4rem;
+      padding: 20px 22px;
+      margin: 16px 0;
+      box-shadow: 0 4px 14px var(--shadow);
+    }
+
+    .panel.warn {
+      background: oklch(97% 0.05 55);
+      border-color: oklch(85% 0.09 55)
+    }
+
+    .panel.note {
+      background: var(--surface-soft)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: .95rem;
+      display: block;
+      overflow-x: auto
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 8px 11px;
+      text-align: left;
+      vertical-align: top
+    }
+
+    th {
+      background: var(--surface-soft);
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    code {
+      background: var(--surface-soft);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: .9em;
+      font-family: monospace;
+    }
+
+    .pill {
+      display: inline-block;
+      background: var(--lilac);
+      border-radius: 999px;
+      padding: 2px 12px;
+      font-size: .82rem;
+      font-weight: 700
+    }
+
+    .prompt-card {
+      border: 2px solid var(--action);
+      border-radius: 1.4rem;
+      overflow: hidden;
+      margin: 20px 0;
+      background: var(--surface)
+    }
+
+    .prompt-head {
+      padding: 16px 20px;
+      background: oklch(94% 0.06 345);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .prompt-head h3 {
+      margin: 0;
+      font-size: 1.15rem
+    }
+
+    .prompt-body {
+      padding: 0
+    }
+
+    .explain {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface)
+    }
+
+    .explain ul {
+      margin: 8px 0 0;
+      padding-left: 20px
+    }
+
+    .explain li {
+      margin-bottom: 4px
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px 20px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      overflow-x: auto;
+      font-size: .84rem;
+      line-height: 1.6;
+      white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    button.copy {
+      border: 0;
+      border-radius: 999px;
+      background: var(--action);
+      color: #fff;
+      font-weight: 800;
+      font-size: .9rem;
+      padding: 9px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+
+    button.copy:hover {
+      background: var(--action-hover)
+    }
+
+    button.copy.done {
+      background: oklch(55% 0.14 158)
+    }
+
+    .check {
+      background: var(--mint);
+      border-radius: 1rem;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-weight: 700
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 40px 0
+    }
+
+    .highlight-text {
+      color: var(--action);
+      font-weight: bold;
+    }
+
+    .step-badge {
+      background: var(--action);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <h1>เวิร์กช็อป: ปั้นเว็บข้อสอบ HSK ระบบ 3 ทักษะด้วย AI</h1>
+    <p class="lead">
+      มาสร้างเว็บจำลองการสอบ HSK แบบ Full Option!<br>
+      จัดเต็มทั้งระบบ <strong>ฟัง (มีเสียงอ่าน), อ่าน, และเขียน</strong> ทีละสเตปให้ทุกคนมีส่วนร่วม
+    </p>
+
+    <div class="panel note">
+      <strong>💡 ก่อนเริ่มงาน (คำศัพท์น่ารู้):</strong><br>
+      <ul>
+        <li><strong>JSON:</strong> กล่องใส่ข้อมูลที่คอมพิวเตอร์อ่านง่าย แบ่งช่องชัดเจนว่าอันไหนคำถาม อันไหนตัวเลือก</li>
+        <li><strong>HTML:</strong> โครงสร้างของหน้าเว็บ (เสาและหลังคา)</li>
+        <li><strong>Tailwind CSS:</strong> ชุดตกแต่งเว็บสำเร็จรูป ช่วยระบายสีและจัดหน้าให้สวยเป๊ะแบบแอปมืออาชีพ</li>
+        <li><strong>Web Speech API:</strong> ระบบอ่านออกเสียง (Text-to-Speech) ที่ฝังอยู่ในเบราว์เซอร์
+          เราจะใช้ตัวนี้สร้างเสียงจำลองให้ข้อสอบพาร์ทการฟัง</li>
+      </ul>
+    </div>
+
+    <h2>แผนการสร้างเว็บวันนี้ (แบ่งเป็น 4 สเตป)</h2>
+    <p>เราจะค่อยๆ ประกอบร่างเว็บขึ้นมา เพื่อให้ทุกคนได้เห็นกลไกการทำงานเบื้องหลังของแอปพลิเคชัน</p>
+    <table>
+      <tr>
+        <th>สเตป</th>
+        <th>เราจะทำอะไรกัน?</th>
+      </tr>
+      <tr>
+        <td><span class="step-badge">1</span><strong>สร้างข้อมูล (JSON)</strong></td>
+        <td>ให้ AI แต่งข้อสอบ 3 หมวด (ฟัง, อ่าน, เขียน) จากคำศัพท์ที่เรามี</td>
+      </tr>
+      <tr>
+        <td><span class="step-badge">2</span><strong>สร้างหน้าตาเว็บ (UI)</strong></td>
+        <td>วาดหน้าเริ่มสอบ และสร้างโครงสำหรับแสดงข้อสอบทั้ง 3 หมวด</td>
+      </tr>
+      <tr>
+        <td><span class="step-badge">3</span><strong>ติดระบบเสียง & แผงข้อสอบ</strong></td>
+        <td><span class="highlight-text">ภารกิจพิเศษ!</span> สั่ง AI เพิ่มปุ่มกดฟังเสียง และแผงข้อสอบ (Palette)</td>
+      </tr>
+      <tr>
+        <td><span class="step-badge">4</span><strong>ระบบตรวจคะแนน</strong></td>
+        <td>เพิ่มตัวจับเวลา และหน้าสรุปผลการสอบอย่างละเอียด</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <h2>Step 1: ให้ AI สร้างข้อสอบ 3 หมวด (สร้าง JSON)</h2>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 1 (แนบไฟล์คำศัพท์ PDF/Word ไปด้วย)</h3>
+        <button class="copy" data-target="p1">📋 คัดลอก Prompt 1</button>
+      </div>
+      <div class="explain">
+        <strong>เป้าหมาย:</strong> เตรียมข้อมูลดิบ (Data)<br>
+        ข้อสอบ HSK มี 3 พาร์ทหลัก เราจะสั่งให้ AI นำคำศัพท์มาแต่งข้อสอบทั้งแบบ <strong>ฟัง
+          (ต้องมีข้อความให้อ่านออกเสียง), อ่าน, และเขียน (ให้พิมพ์พินอิน)</strong><br>
+        <span class="highlight-text">🔥 ภารกิจ:</span> เปลี่ยนตัวเลข <code>[👉 ใส่จำนวนข้อ 👈]</code>
+        เป็นจำนวนข้อสอบที่ต้องการ
+      </div>
+      <div class="prompt-body">
+        <pre id="p1">ฉันมีไฟล์คำศัพท์ภาษาจีน (แนบไฟล์มาให้แล้ว)
+จงสวมบทบาทเป็นอาจารย์สอนภาษาจีนระดับมืออาชีพ ช่วยแต่งข้อสอบ HSK จำนวน [👉 ใส่จำนวนข้อ 👈] ข้อต่อ 1 หมวด 
+โดยแบ่งข้อสอบออกเป็น 3 หมวด ได้แก่:
+1. listening (การฟัง) - เป็นปรนัย 4 ตัวเลือก มีประโยคให้ฟัง (audio) และคำถาม (question)
+2. reading (การอ่าน) - เป็นปรนัย 4 ตัวเลือก เติมคำในช่องว่าง
+3. writing (การเขียน) - เป็นอัตนัย ให้คำแปลมาแล้วให้ผู้สอบพิมพ์อักษรจีนตอบ
+
+โปรดจัดเรียงผลลัพธ์ในรูปแบบ "JSON" โดยใช้โครงสร้างเป๊ะๆ ตามนี้:
+
+{
+  "listening": [
+    { "id": 1, "audio": "ประโยคสนทนาภาษาจีน...", "question": "คำถาม...", "choices": [ {"label": "A", "zh": "ตัวเลือก A"}, ...ถึง D ], "answer": "A", "expl": "เฉลยสั้นๆ" }
+  ],
+  "reading": [
+    { "id": 11, "question": "คำถามเว้นช่องว่าง...", "choices": [ {"label": "A", "zh": "ตัวเลือก A"}, ...ถึง D ], "answer": "A", "expl": "เฉลยสั้นๆ" }
+  ],
+  "writing": [
+    { "id": 21, "question": "พิมพ์คำศัพท์ภาษาจีนที่มีความหมายว่า: [คำแปล]", "py": "พินอินของคำตอบ", "answer": "อักษรจีนที่ถูกต้อง", "expl": "เฉลย" }
+  ]
+}
+
+กฎเหล็ก: ตอบกลับมาเป็น Code Block ของ JSON เพียงกล่องเดียว ห้ามมีคำอธิบายใดๆ ทั้งสิ้น</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ สิ่งที่ต้องได้: กล่องโค้ด JSON ที่แบ่งเป็น 3 หมวดชัดเจน กดปุ่ม "Copy" เตรียมไว้เลย</div>
+
+    <hr>
+
+    <h2>Step 2: สร้างหน้าตาเว็บ และโครงข้อสอบ (UI & Layout)</h2>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 2 (สำหรับสร้างโครงเว็บ)</h3>
+        <button class="copy" data-target="p2">📋 คัดลอก Prompt 2</button>
+      </div>
+      <div class="explain">
+        <strong>เป้าหมาย:</strong> สร้างบ้านให้ข้อสอบอยู่<br>
+        สั่งให้ AI นำข้อสอบมาลงในเว็บ โดยสร้าง "หน้าเริ่มสอบ" ที่ให้กรอกชื่อ และสร้าง "หน้าทำข้อสอบ"
+        ที่มีแท็บสลับระหว่าง <strong>การฟัง / การอ่าน / การเขียน</strong><br>
+        <strong>คำแนะนำ:</strong> ลบข้อความ <code>[👉 วางข้อมูล...]</code> ออก แล้ววาง JSON จาก Step 1 ลงไปแทน
+      </div>
+      <div class="prompt-body">
+        <pre id="p2">ช่วยสร้าง Web App แบบทดสอบ HSK ให้ฉัน โดยเขียนจบในไฟล์ HTML ไฟล์เดียว
+ไม่ต้องแยกไฟล์ ฉันจะเปิดเล่นในเบราว์เซอร์โดยตรง
+
+## ข้อมูลข้อสอบ (DATA)
+นำข้อมูล JSON นี้ ฝังในตัวแปร JavaScript ชื่อ `EXAM_DATA`
+
+[👉 วางข้อมูล JSON ที่ก๊อปปี้มาจาก Step 1 ตรงนี้ 👈]
+
+## ดีไซน์เว็บ (ใช้ Tailwind CSS ผ่าน CDN)
+- **สำคัญเรื่องฟอนต์:** ให้ดึง Google Fonts ชื่อ "K2D" มาใช้เป็นฟอนต์หลักของหน้าเว็บ เพื่อให้แสดงผลภาษาไทยได้สวยงามทั้งบน Mac และ Windows
+- ใช้พื้นหลังสีครีมอ่อน (#fdf8f5) ข้อความหลักสีเทาเข้ม
+- ปุ่มหลักใช้สีส้ม (#d35400) และดีไซน์การ์ดมุมโค้ง (rounded-2xl) พร้อมเงาดูทันสมัย
+
+## ฟีเจอร์เวอร์ชัน 1: โครงสร้างและแท็บ
+1. **หน้าจอเริ่มสอบ:** มีชื่อเว็บ มีกล่องให้ "กรอกชื่อผู้สอบ" และปุ่มเริ่มสอบ
+2. **หน้าทำข้อสอบ:** 
+   - มีแท็บ (Tabs) ด้านบน 3 อัน: "🎧 การฟัง", "📖 การอ่าน", "✍️ การเขียน"
+   - เมื่อกดปุ่ม "ถัดไป" เรื่อยๆ ระบบจะเปลี่ยนจากหมวดฟัง ไปอ่าน ไปเขียน อัตโนมัติ
+   - หมวดฟัง/อ่าน: แสดงคำถาม และปุ่มตัวเลือก 4 ข้อ (คลิกเลือกได้)
+   - หมวดเขียน: แสดงคำถาม และมี "ช่อง Input (Text)" ให้พิมพ์ตอบ
+
+กฎ: ห้ามใช้ &lt;script type="module"&gt; และ ห้าม fetch ข้อมูลจากภายนอก ส่งโค้ดมาเป็นก้อนเดียว</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ ลองนำโค้ดที่ได้ไปเซฟเป็นไฟล์ <code>exam.html</code> แล้วเปิดดู เราจะได้เว็บที่มีแท็บ 3
+      หมวดแล้ว! (แต่พาร์ทฟังยังไม่มีเสียงนะ)</div>
+
+    <hr>
+
+    <h2>Step 3: ใส่ระบบเสียงและแผงควบคุม (Interactive Features)</h2>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 3 (พิมพ์คุยต่อในแชทเดิม)</h3>
+        <button class="copy" data-target="p3">📋 คัดลอก Prompt 3</button>
+      </div>
+      <div class="explain">
+        <strong>เป้าหมาย:</strong> ติดตั้งฟังก์ชันที่ทำให้เว็บเหมือนแอปจริง<br>
+        นี่คือจุดเด่นของเว็บเรา! เราจะใส่ <strong>"ปุ่มฟังเสียง"</strong> ในหมวดการฟัง และสร้าง <strong>"แผงข้อสอบ
+          (Palette)"</strong> เพื่อให้ผู้สอบกดดูว่าข้อไหนทำแล้วหรือยังไม่ได้ทำ
+      </div>
+      <div class="prompt-body">
+        <pre id="p3">ยอดเยี่ยมมาก! ตอนนี้ฉันต้องการเพิ่มฟังก์ชันการโต้ตอบ (Interactive) เข้าไปในโค้ดเดิม
+โปรดอัปเกรดโค้ดแล้วส่งโค้ด HTML เวอร์ชันใหม่มาให้เต็มๆ ไฟล์
+
+ฟีเจอร์ที่ต้องเพิ่ม:
+1. **ระบบอ่านออกเสียง (Text-to-Speech):** ในข้อสอบหมวด "การฟัง" ให้เพิ่มปุ่ม "▶ ฟังเสียง" ไว้เหนือคำถาม เมื่อกดปุ่ม ให้ระบบใช้ `window.speechSynthesis` อ่านข้อความภาษาจีนที่อยู่ในช่อง `audio` ของ JSON ออกมา (ให้ตั้งค่าเสียงเป็นภาษาจีน 'zh-CN')
+2. **แผงข้อสอบ (Question Palette):** สร้างปุ่มเล็กๆ ด้านล่างจอที่กดแล้วจะมี Pop-up แสดงปุ่มหมายเลขข้อสอบทั้งหมด (กริดตาราง)
+   - ข้อไหนที่เลือกคำตอบ/พิมพ์ตอบแล้ว ปุ่มหมายเลขนั้นให้เปลี่ยนเป็น "สีส้มทึบ"
+   - ข้อไหนยังไม่ได้ตอบ เป็นขอบสีเทา
+   - สามารถคลิกที่หมายเลขข้อเพื่อกระโดดไปทำข้อนั้นได้ทันที
+
+กฎยังเหมือนเดิม: รวมทุกอย่างในไฟล์เดียว ห้ามตัดแบ่งโค้ดเด็ดขาด</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ นำโค้ดไปเซฟทับไฟล์เดิม ลองเปิดแล้วเข้าหมวดการฟัง กดปุ่มเพื่อฟังเสียง AI พูดภาษาจีนได้เลย!</div>
+
+    <hr>
+
+    <h2>Step 4: จับเวลาและตรวจข้อสอบ (Scoring System)</h2>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 4 (พิมพ์คุยต่อในแชทเดิม)</h3>
+        <button class="copy" data-target="p4">📋 คัดลอก Prompt 4</button>
+      </div>
+      <div class="explain">
+        <strong>เป้าหมาย:</strong> บทสรุปของการทำเว็บสอบ<br>
+        สเตปสุดท้าย เราจะใส่ระบบจับเวลา เมื่อหมดเวลาหรือกดส่ง จะตรวจคำตอบและแยกคะแนนให้ดูว่า ทักษะฟัง อ่าน เขียน
+        ได้คะแนนเท่าไหร่บ้าง<br>
+        <span class="highlight-text">🔥 ภารกิจ:</span> เปลี่ยนตัวเลขเวลาใน Prompt ก่อนกดส่ง!
+      </div>
+      <div class="prompt-body">
+        <pre id="p4">เยี่ยมมาก! สเตปสุดท้าย เราจะทำระบบตรวจข้อสอบ
+โปรดอัปเกรดโค้ดเดิม และส่งโค้ด HTML สมบูรณ์แบบ (Final Version) มาให้ฉัน
+
+ฟีเจอร์ที่ต้องเพิ่ม:
+1. **แถบจับเวลา:** มุมบนจอให้แสดงเวลาถอยหลังรวม [👉 ใส่เวลาสอบ เช่น 15 👈] นาที (เวลาเดินตลอดไม่ว่าจะอยู่แท็บไหน) เมื่อเวลาหมดให้บังคับส่งข้อสอบทันที
+2. **หน้าจอผลสอบ (Result Screen):** เมื่อกดปุ่ม "ส่งข้อสอบ" (ในข้อสุดท้ายของหมวดเขียน) ให้ตัดเข้าหน้าสรุปผล
+3. **รายละเอียดในหน้าผลสอบ:**
+   - แสดงคะแนนรวม ตัวใหญ่ๆ (เช่น ได้ 10/15)
+   - มีกล่องแยก 3 กล่อง แจ้งว่า: การฟังได้กี่คะแนน, การอ่านได้กี่คะแนน, การเขียนได้กี่คะแนน
+   - แสดงรายการเฉลยทุกข้อ บอกว่าข้อนี้ตอบถูกหรือผิด และแสดงคำอธิบาย (จากช่อง expl ใน JSON)
+   - มีปุ่ม "กลับสู่หน้าแรก" เพื่อสอบใหม่
+
+เขียนให้ครบจบในไฟล์เดียว ห้ามตัดโค้ดกลางคัน</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ สมบูรณ์แบบ! นำไปรันและทดสอบระบบทั้งหมดได้เลย</div>
+
+    <hr>
+
+    <h2>กล่องเครื่องมือฉุกเฉิน (บรรทัดกู้ชีพ)</h2>
+    <p class="small">หากเปิดเว็บแล้วจอดับ หรือ AI พิมพ์โค้ดไม่จบ ให้ก๊อปปี้ข้อความนี้ไปสั่งให้ AI ซ่อมครับ:</p>
+    <table>
+      <tr>
+        <th>ปัญหาที่เจอ</th>
+        <th>ประโยคสำหรับสั่ง AI ให้ช่วยซ่อมโค้ด</th>
+      </tr>
+      <tr>
+        <td>เปิดมาแล้วหน้าจอขาวโพลน</td>
+        <td>
+          <code>โค้ดที่ให้มาพอเปิดในเบราว์เซอร์แล้วหน้าจอขาวโพลน ไม่มีอะไรขึ้นเลย น่าจะมีบั๊กหรือพิมพ์ผิดไวยากรณ์ ช่วยตรวจสอบการอ้างอิงฟังก์ชันตัวแปร และส่งโค้ดที่ซ่อมแล้วมาให้ใหม่ทั้งหมด</code>
+        </td>
+      </tr>
+      <tr>
+        <td>AI พิมพ์โค้ดมาให้ครึ่งเดียว แล้วหยุด</td>
+        <td>
+          <code>โค้ดถูกตัดกลางคัน พิมพ์โค้ดมาไม่ครบ โปรดเขียนโค้ดที่เหลือต่อจากบรรทัดสุดท้ายให้จบสมบูรณ์ในกล่องโค้ดเดียว (ห้ามแยกไฟล์เด็ดขาด)</code>
+        </td>
+      </tr>
+      <tr>
+        <td>คลิกปุ่มหรือระบบเสียงไม่ทำงาน</td>
+        <td>
+          <code>ปุ่มบนเว็บหรือระบบเสียงกดแล้วไม่ทำงาน ช่วยตรวจสอบระบบคำสั่ง (JavaScript) และแก้ไขโค้ดให้กลับมาทำงานได้ปกติ</code>
+        </td>
+      </tr>
+    </table>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('button.copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.getElementById(btn.dataset.target);
+        if (!el) return;
+        var text = el.textContent;
+        var done = function () {
+          var old = btn.textContent;
+          btn.textContent = '✓ คัดลอกแล้ว';
+          btn.classList.add('done');
+          setTimeout(function () {
+            btn.textContent = old;
+            btn.classList.remove('done');
+          }, 1600);
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+        } else {
+          fallback(text, done);
+        }
+      });
+    });
+    function fallback(text, done) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); }
+      catch (e) { alert('คัดลอกไม่ได้ กรุณาเลือกข้อความแล้วกด Ctrl+C / Cmd+C'); }
+      document.body.removeChild(ta);
+    }
+  </script>
+</body>
+
+</html>

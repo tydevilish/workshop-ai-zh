@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>เวิร์กช็อป: สร้างเกมคำศัพท์จีนด้วย AI</title>
+  <style>
+    /* LINE Seed Sans TH, served from jsdelivr with access-control-allow-origin: *
+   so it also loads when this page is opened straight from file://.
+   If the room has no internet the browser silently falls back to the system
+   font stack below, which is why the stack is still spelled out. */
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_XBd.ttf") format("truetype");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: oklch(97.5% 0.022 326);
+      --surface: oklch(99% 0.012 327);
+      --surface-soft: oklch(95.5% 0.032 318);
+      --ink: oklch(30% 0.045 297);
+      --line: oklch(88% 0.035 310);
+      --muted: oklch(48% 0.04 300);
+      --action: oklch(61% 0.19 345);
+      --action-hover: oklch(54% 0.2 345);
+      --mint: oklch(90% 0.09 157);
+      --lilac: oklch(87% 0.095 298);
+      --shadow: oklch(78% 0.055 313 / .3);
+      --code-bg: oklch(26% 0.03 297);
+      --code-ink: oklch(92% 0.02 320);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "LINE Seed Sans TH", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans Thai", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.7;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 85px 20px 80px
+    }
+
+    @media (max-width: 768px) {
+      .wrap { padding-top: 32px; padding-bottom: 90px }
+    }
+
+    /* Custom Scrollbar matching workshop background */
+    ::-webkit-scrollbar { width: 14px; height: 14px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border: 4px solid var(--bg);
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    h1 {
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      line-height: 1.25;
+      margin: 0 0 8px;
+      letter-spacing: -.02em
+    }
+
+    h2 {
+      font-size: clamp(1.25rem, 3vw, 1.6rem);
+      margin: 48px 0 12px;
+      letter-spacing: -.015em
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 24px 0 8px
+    }
+
+    p {
+      margin: 0 0 12px
+    }
+
+    a {
+      color: var(--action)
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 24px
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 1.4rem;
+      padding: 20px 22px;
+      margin: 16px 0;
+      box-shadow: 0 4px 14px var(--shadow);
+    }
+
+    .panel.warn {
+      background: oklch(97% 0.05 55);
+      border-color: oklch(85% 0.09 55)
+    }
+
+    .panel.note {
+      background: var(--surface-soft)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: .95rem;
+      display: block;
+      overflow-x: auto
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 8px 11px;
+      text-align: left;
+      vertical-align: top
+    }
+
+    th {
+      background: var(--surface-soft);
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    code {
+      background: var(--surface-soft);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: .9em
+    }
+
+    .pill {
+      display: inline-block;
+      background: var(--lilac);
+      border-radius: 999px;
+      padding: 2px 12px;
+      font-size: .82rem;
+      font-weight: 700
+    }
+
+    .prompt-card {
+      border: 2px solid var(--action);
+      border-radius: 1.4rem;
+      overflow: hidden;
+      margin: 20px 0;
+      background: var(--surface)
+    }
+
+    .prompt-head {
+      padding: 16px 20px;
+      background: oklch(94% 0.06 345);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .prompt-head h3 {
+      margin: 0;
+      font-size: 1.15rem
+    }
+
+    .prompt-body {
+      padding: 0
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px 20px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      overflow-x: auto;
+      font-size: .84rem;
+      line-height: 1.6;
+      white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    button.copy {
+      border: 0;
+      border-radius: 999px;
+      background: var(--action);
+      color: #fff;
+      font-weight: 800;
+      font-size: .9rem;
+      padding: 9px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+
+    button.copy:hover {
+      background: var(--action-hover)
+    }
+
+    button.copy.done {
+      background: oklch(55% 0.14 158)
+    }
+
+    .check {
+      background: var(--mint);
+      border-radius: 1rem;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-weight: 700
+    }
+
+    /* The plain sentence a teacher would actually type, before it is turned into a
+   full prompt. Deliberately NOT .check: green + bold is the "you passed" signal
+   in this document and must not read as one here. */
+    .quote {
+      background: var(--surface-soft);
+      border-left: 4px solid var(--action);
+      border-radius: .6rem;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-style: italic
+    }
+
+    .time {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      color: var(--action);
+      white-space: nowrap
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 40px 0
+    }
+
+    .small {
+      font-size: .9rem;
+      color: var(--muted)
+    }
+
+    .ok {
+      color: oklch(48% 0.14 158);
+      font-weight: 800
+    }
+
+    .no {
+      color: oklch(53% 0.19 24);
+      font-weight: 800
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <h1>สร้างเกมคำศัพท์จีนด้วย AI</h1>
+    <p class="lead">
+      เวิร์กช็อป 30 นาที · สำหรับครูสอนภาษาจีนที่เขียนโปรแกรมไม่เป็น<br>
+      ใช้แค่ <strong>เบราว์เซอร์ + บัญชี Google (Gemini)</strong> ไม่ต้องติดตั้งอะไร ไม่ต้องสมัครอะไรเพิ่ม
+    </p>
+
+    <div class="panel warn">
+      <strong>เป้าหมายจริงคือฝึก prompt ไม่ใช่ให้ทุกคนได้เกมเหมือนกันเป๊ะ</strong><br>
+      ผลลัพธ์ของแต่ละคนจะต่างกันแน่นอน บอกผู้เรียนตั้งแต่ต้น นั่นคือบทเรียน ไม่ใช่ความผิดพลาด<br>
+      สิ่งเดียวที่ต้องกันคือ <strong>ไม่มีใครกลับบ้านมือเปล่า</strong>
+    </div>
+
+    <h2>ใครอ่านตรงไหน</h2>
+    <table>
+      <tr>
+        <th>ส่วน</th>
+        <th>ใคร</th>
+        <th>ใช้เวลา</th>
+      </tr>
+      <tr>
+        <td>วิธีใช้หน้านี้ · ก่อนเริ่มต้องมีอะไร · คำที่จะได้ยินบ่อย · บอกผู้เรียนก่อนเริ่ม · กล่อง Prompt ทั้ง 3</td>
+        <td><strong>ผู้เรียน</strong></td>
+        <td>อ่าน 3 นาที</td>
+      </tr>
+      <tr>
+        <td>สูตรคิด prompt · กล่อง "ที่มาของ Prompt" ทั้ง 3</td>
+        <td><strong>ผู้สอนใช้บรรยาย</strong> ระหว่างรอ AI ทำงาน</td>
+        <td>พูด 6 นาที</td>
+      </tr>
+      <tr>
+        <td>สำหรับผู้สอน · หมายเหตุทางเทคนิค</td>
+        <td><strong>ผู้สอนอ่านก่อนวันงาน</strong></td>
+        <td>อ่าน 5 นาที</td>
+      </tr>
+    </table>
+    <p class="small">หน้านี้ยาว เพราะรวมของ 3 คนไว้ที่เดียว ผู้เรียนไม่ต้องอ่านทั้งหมด แถวแรกแถวเดียวพอ</p>
+
+    <h2>วิธีใช้หน้านี้ <span class="pill">ผู้เรียน</span></h2>
+    <div class="panel">
+      <p><strong>หน้านี้ใช้เหมือนใบสูตรอาหาร</strong> อ่านจากบนลงล่าง ทำทีละ Step ไม่ต้องข้าม</p>
+      <ul>
+        <li><strong>กล่องสีดำคือข้อความสั่ง AI</strong> เป็นภาษาอังกฤษ <strong>ไม่ต้องอ่าน ไม่ต้องแปล
+            ไม่ต้องพิมพ์ตาม</strong> หน้าที่เดียวคือกดปุ่มสีชมพู "คัดลอก" ที่อยู่มุมบนขวาของกล่องนั้น</li>
+        <li>กดปุ่มแล้วปุ่มจะเปลี่ยนเป็น <strong>✓ คัดลอกแล้ว</strong> แปลว่าข้อความเข้าเครื่องแล้ว เหมือนกด Ctrl+C ใน
+          Word ไม่ต้องลากเลือกข้อความเอง</li>
+        <li><strong>กล่องสีเขียว ✅</strong> คือด่านตรวจ ทำครบแล้วเช็คตามนั้นก่อนไป Step ถัดไป</li>
+        <li><strong>กล่องสีส้ม</strong> คือข้อควรระวัง อ่านก่อนพลาด</li>
+      </ul>
+    </div>
+
+    <h2>ก่อนเริ่ม ต้องมีอะไรบ้าง</h2>
+    <table>
+      <tr>
+        <th>ต้องมี</th>
+        <th>เช็คยังไง</th>
+      </tr>
+      <tr>
+        <td>คอมพิวเตอร์ที่ต่ออินเทอร์เน็ตได้</td>
+        <td><strong>Windows, macOS, Linux ใช้ได้หมด</strong> ทำงานผ่านเบราว์เซอร์ล้วน ๆ ไม่ต้องลงโปรแกรม
+          ไม่ต้องสมัครอะไรเพิ่ม ไม่ต้องจ่ายเงิน ไม่ต้องพิมพ์คำสั่งดำ ๆ<br>
+          <span class="small">มือถือกับแท็บเล็ตเล่นเกมที่ทำเสร็จได้ แต่ขั้นเซฟไฟล์ (Step 3) ต้องใช้คอมพิวเตอร์</span>
+        </td>
+      </tr>
+      <tr>
+        <td>เบราว์เซอร์</td>
+        <td>โปรแกรมที่ใช้เปิดเว็บ เช่น Chrome, Edge, Safari ตัวไหนก็ได้ที่มีอยู่แล้วในเครื่อง</td>
+      </tr>
+      <tr>
+        <td>บัญชี Google</td>
+        <td>บัญชีเดียวกับที่ใช้ Gmail ถ้าเข้า Gmail ได้ ก็เข้า Gemini ได้</td>
+      </tr>
+    </table>
+
+    <h2>สิ่งที่จะได้</h2>
+    <p>ไฟล์ HTML ไฟล์เดียว เปิดในเบราว์เซอร์ได้เลย มีหน้าแรกให้เลือก 2 โหมด:</p>
+    <table>
+      <tr>
+        <th>โหมด</th>
+        <th>เล่นยังไง</th>
+        <th>สอนอะไร</th>
+      </tr>
+      <tr>
+        <td><strong>จับคู่คำศัพท์</strong></td>
+        <td>จับคู่คำจีนกับความหมายไทย</td>
+        <td>จำคำศัพท์ ความหมาย เสียงอ่าน</td>
+      </tr>
+      <tr>
+        <td><strong>ผสมคำ</strong></td>
+        <td>ลาก 父 ไปชน 母 ได้ 父母</td>
+        <td>การประกอบคำจากตัวอักษรเดี่ยว</td>
+      </tr>
+    </table>
+    <p class="small">ใช้คำศัพท์ 38 คำจากไฟล์ Word ที่อาจารย์เตรียมมา ฝังอยู่ใน prompt แล้ว ไม่ต้องโหลดจากที่ไหน</p>
+
+    <h2>ตารางเวลา 30 นาที</h2>
+    <table>
+      <tr>
+        <th>นาที</th>
+        <th>ทำอะไร</th>
+        <th>พูดอะไรระหว่างรอ AI</th>
+      </tr>
+      <tr>
+        <td class="time">0–5</td>
+        <td>อธิบายว่าจะสร้างอะไร · เปิด <a href="https://gemini.google.com" target="_blank"
+            rel="noopener">gemini.google.com</a> · เปิด <a href="https://dou-jeen.vercel.app" target="_blank"
+            rel="noopener">dou-jeen.vercel.app</a> ให้ดูตัวอย่างเกมแนวนี้</td>
+        <td>ตาราง <strong>สูตรคิด prompt</strong> 5 ข้อ นี่คือบทเรียนหลักของวันนี้</td>
+      </tr>
+      <tr>
+        <td class="time">5–17</td>
+        <td><strong>Step 1</strong> วาง Prompt 1 → หน้าแรก + โหมดจับคู่คำศัพท์ <span class="pill">ห้ามพลาดขั้นนี้</span>
+        </td>
+        <td>กล่อง <strong>ที่มาของ Prompt 1</strong> ประโยคสั้นกลายเป็นข้อความยาวได้ยังไง</td>
+      </tr>
+      <tr>
+        <td class="time">17–27</td>
+        <td><strong>Step 2</strong> วาง Prompt 2 → เพิ่มโหมดผสมคำในไฟล์เดิม</td>
+        <td>กล่อง <strong>ที่มาของ Prompt 2</strong> อ้างอิง Infinite Craft แล้วบอกว่าต่างตรงไหน</td>
+      </tr>
+      <tr>
+        <td class="time">27–30</td>
+        <td><strong>Step 3</strong> เซฟไฟล์เก็บไว้ · แจก <strong>Step 4</strong> ไปทำต่อที่บ้าน</td>
+        <td>กล่อง <strong>ที่มาของ Prompt 3</strong> สั้น ๆ ว่าเริ่มจากงานที่ทำอยู่แล้ว</td>
+      </tr>
+    </table>
+
+    <div class="panel">
+      <strong>ทำไม Prompt 1 ห้ามพลาด</strong><br>
+      คำศัพท์ฝังอยู่ในตัวเกมแล้ว ตัวเกมจึงเล่นจบได้แม้เน็ตในห้องแกว่ง (มีแต่ปุ่มเสียงที่ต้องใช้เน็ต)
+      ไม่ต้องเซฟไฟล์ก่อนก็ดูผลได้
+      ใครผ่านขั้นนี้ถือว่ามีผลงานแล้ว ต่อให้ Prompt 2 พังก็ยังได้ของกลับบ้าน
+    </div>
+
+    <h2>สูตรคิด prompt ที่ใช้ได้ตลอดชีวิต</h2>
+    <p>นี่คือบทเรียนจริงของวันนี้ prompt ทั้ง 3 ตัวข้างล่างเกิดจากสูตรเดียวกันนี้หมด
+      ครูเอาไปใช้สั่งงานอย่างอื่นได้เลย ไม่จำกัดแค่เกมคำศัพท์</p>
+    <table>
+      <tr>
+        <th>ต้องบอก AI</th>
+        <th>ถ้าไม่บอก จะเจออะไร</th>
+      </tr>
+      <tr>
+        <td><strong>1. ผลลัพธ์ที่จับต้องได้</strong><br>"ไฟล์ HTML ไฟล์เดียว ดับเบิลคลิกเปิดได้"</td>
+        <td>AI ให้โปรเจกต์ที่ต้องลงโปรแกรมเพิ่มก่อนถึงจะเปิดได้ ครูเปิดไม่ได้เลย</td>
+      </tr>
+      <tr>
+        <td><strong>2. ข้อห้าม</strong><br>"ห้ามใช้ของจากอินเทอร์เน็ต"</td>
+        <td>AI เลือกวิธีที่ตัวเองถนัด ซึ่งมักพังบนเครื่องครู</td>
+      </tr>
+      <tr>
+        <td><strong>3. ข้อมูลจริง ไม่ใช่คำบรรยาย</strong><br>วางคำศัพท์ 38 คำลงไปตรง ๆ · ให้รหัสสีเป็นตัวเลข</td>
+        <td>บอกว่า "ใส่คำศัพท์พื้นฐาน" AI จะแต่งคำเอง บอกว่า "สีสดใส" ได้หน้าตาคนละแบบทุกครั้ง</td>
+      </tr>
+      <tr>
+        <td><strong>4. ให้ทำอะไรตอนพัง</strong><br>"ห้ามหน้าจอขาว ให้ขึ้นข้อความไทยบอกแทน"</td>
+        <td>พังแล้วขาวเปล่า ครูแก้เองไม่ได้ จบเลย</td>
+      </tr>
+      <tr>
+        <td><strong>5. รูปแบบคำตอบ</strong><br>"ส่งไฟล์เดียวจบ ห้ามแบ่ง 2 ข้อความ"</td>
+        <td>ได้โค้ดครึ่งเดียว ต้องเอา 2 ท่อนมาต่อกันเอง ซึ่งคนไม่เขียนโค้ดทำไม่ได้</td>
+      </tr>
+    </table>
+    <div class="panel note">
+      <strong>ลำดับสำคัญ</strong>: บอก<strong>ข้อห้ามก่อน</strong>บอกสิ่งที่อยากได้เสมอ
+      AI อ่านทั้งข้อความก็จริง แต่สิ่งที่บอกก่อนมีน้ำหนักกว่า และถ้าไม่กันไว้ตั้งแต่แรก
+      มันจะเลือกวิธีที่มันคุ้นเคยไปแล้วก่อนจะถึงเงื่อนไขของเรา
+    </div>
+
+    <h2>คำที่จะได้ยินบ่อยวันนี้</h2>
+    <div class="panel note">
+      <ul>
+        <li><strong>Prompt (พร้อมต์)</strong>: ข้อความที่เราพิมพ์สั่ง AI ยิ่งบอกละเอียด ยิ่งได้ตรงใจ
+          วันนี้เราไม่พิมพ์เอง กดปุ่มคัดลอกจากหน้านี้ไปวาง</li>
+        <li><strong>ไฟล์ HTML</strong>: ไฟล์หน้าเว็บ 1 ไฟล์ ดับเบิลคลิกแล้วเปิดในเบราว์เซอร์ได้เลย เหมือนเปิดไฟล์ Word
+        </li>
+        <li><strong>Canvas</strong>: หน้าต่างที่ Gemini เปิดขึ้นมาข้าง ๆ เวลาเขียนโค้ดยาว ในนั้นมีปุ่มดูตัวอย่าง
+          (Preview) และปุ่มดาวน์โหลด</li>
+        <li><strong>แชท</strong>: หน้าคุยกับ AI 1 หน้า วันนี้ต้องอยู่แชทเดียวตลอด เพราะ AI
+          จำงานเดิมได้เฉพาะในแชทเดียวกัน</li>
+        <li><strong>เกมจำความคืบหน้าไว้ในเบราว์เซอร์</strong>: เปิดใหม่แล้วคะแนนยังอยู่
+          แต่ถ้าล้างประวัติเบราว์เซอร์จะหาย</li>
+      </ul>
+    </div>
+
+    <h2>บอกผู้เรียนก่อนเริ่ม</h2>
+    <ol>
+      <li>เปิด <a href="https://gemini.google.com" target="_blank" rel="noopener">gemini.google.com</a> ล็อกอินด้วยบัญชี
+        Google ให้พร้อม</li>
+      <li>กดปุ่ม <strong>คัดลอก Prompt 1</strong> ในหน้านี้ → กลับไปที่ Gemini → คลิกช่องพิมพ์ข้อความล่างสุด → กด
+        <strong>Ctrl+V</strong> (Windows) หรือ <strong>Cmd+V</strong> (Mac) → กด Enter
+      </li>
+      <li>รอจน Gemini พิมพ์โค้ดเสร็จ อย่าเพิ่งพิมพ์อะไรแทรก</li>
+      <li><strong>ดูผลงานได้เลยโดยยังไม่ต้องเซฟไฟล์</strong>: ถ้า Gemini เปิด Canvas ให้กดแท็บ <strong>Preview</strong>
+        ในนั้น จะเห็นเกมทำงานทันที ถ้าไม่มี Canvas ให้ข้ามไปทำขั้นเซฟไฟล์ (Step 3) ก่อนแล้วค่อยเปิดดู</li>
+      <li>Prompt 2 ต้องวาง<strong>ในแชทเดิม</strong> ห้ามเปิดแชทใหม่ ถ้าเปิดใหม่ AI จะลืมเกมที่เพิ่งทำ</li>
+      <li>ผลของแต่ละคนจะไม่เหมือนกัน เป็นเรื่องปกติ</li>
+    </ol>
+
+    <hr>
+
+    <h2>Step 1: หน้าแรก + โหมดจับคู่คำศัพท์</h2>
+    <div class="panel note">
+      <strong>ขั้นนี้ทำอะไร:</strong> สั่ง AI ให้สร้างไฟล์เกมไฟล์แรกจากศูนย์ ได้หน้าแรก 2 ปุ่ม
+      และโหมดจับคู่ที่เล่นจบได้จริง<br>
+      <strong>ทำไปทำไม:</strong> เพื่อให้ทุกคนมีของกลับบ้านตั้งแต่ขั้นแรก และได้เห็นว่า prompt ที่ระบุข้อห้ามชัดเจน
+      ให้ผลต่างจาก prompt ลอย ๆ ยังไง
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">ที่มาของ Prompt 1: จากประโยคเดียว กลายเป็นข้อความยาวได้ยังไง</h3>
+      <p>ถ้าครูนึกอยากได้เกมนี้เอง สิ่งที่ครูจะพิมพ์จริงคือประโยคสั้น ๆ ประมาณนี้:</p>
+      <div class="quote">
+        "ช่วยทำเว็บเกมจับคู่คำศัพท์ภาษาจีนให้หน่อย มีเสียงอ่านด้วย"
+      </div>
+      <p>ประโยคนี้<strong>ไม่ผิด</strong> และ AI ตอบได้ แต่ตอบแบบเดาใจเราหมดทุกช่อง
+        Prompt 1 คือประโยคนี้บวกคำตอบของคำถามที่ AI ต้องเดา ทีละข้อ:</p>
+      <table>
+        <tr>
+          <th>AI ต้องเดาอะไร</th>
+          <th>ถ้าปล่อยให้เดา</th>
+          <th>เลยเติมอะไรลงไป</th>
+        </tr>
+        <tr>
+          <td>เอาไปเปิดยังไง</td>
+          <td>ให้โปรเจกต์ที่ต้องลงโปรแกรมก่อน ครูเปิดไม่ได้</td>
+          <td>"ไฟล์ HTML ไฟล์เดียว ดับเบิลคลิกเปิด ไม่ต้องลงอะไร"</td>
+        </tr>
+        <tr>
+          <td>ใช้คำศัพท์อะไร</td>
+          <td>AI แต่งคำเอง ไม่ตรงกับที่ครูสอน</td>
+          <td>วางคำศัพท์ 38 คำของอาจารย์ลงไปในตัว prompt เลย</td>
+        </tr>
+        <tr>
+          <td>ภาษาบนหน้าจอ</td>
+          <td>ปุ่มและข้อความเป็นอังกฤษ</td>
+          <td>"ข้อความทุกอย่างเป็นภาษาไทย คำศัพท์คงเป็นจีน"</td>
+        </tr>
+        <tr>
+          <td>หน้าตาเป็นยังไง</td>
+          <td>ได้คนละแบบทุกครั้งที่สั่ง</td>
+          <td>ให้รหัสสีจริงเป็นตัวเลข ไม่ใช่คำว่า "สดใส"</td>
+        </tr>
+        <tr>
+          <td>เสียงอ่านมาจากไหน</td>
+          <td>AI เลือกบริการที่ต้องสมัครและใส่รหัส</td>
+          <td>ให้โค้ดฟังก์ชันเสียงที่ทดสอบแล้วไปเลย ไม่ต้องให้คิดเอง</td>
+        </tr>
+        <tr>
+          <td>พังแล้วทำไง</td>
+          <td>หน้าจอขาวเปล่า</td>
+          <td>"ห้ามหน้าจอขาว ให้ขึ้นข้อความไทยบอกแทน"</td>
+        </tr>
+      </table>
+      <p class="small">พูดอีกแบบ: prompt ยาวไม่ได้เก่งกว่า prompt สั้นเพราะความยาว
+        แต่เพราะมันปิดช่องที่ AI ต้องเดาไปทีละช่อง ทุกช่องที่ปล่อยไว้คือจุดที่ผลลัพธ์ของ 200 คนจะแตกกัน</p>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 1</h3>
+        <button class="copy" data-target="p1">📋 คัดลอก Prompt 1</button>
+      </div>
+      <div class="prompt-body">
+        <pre id="p1">Build me a Chinese vocabulary game as ONE self-contained HTML file.
+I am a Chinese language teacher. I cannot write or read code.
+
+## OUTPUT REQUIREMENT
+A single .html file containing all HTML, CSS and JavaScript.
+I will double-click it to open it in a browser. No server, no install, no build step.
+
+## HARD RULES — breaking any of these makes the game fail completely
+- No external libraries. No &lt;script src="https://..."&gt;. No React, Vue, Tailwind CDN, jQuery.
+  Plain vanilla JavaScript only.
+- Do NOT use &lt;script type="module"&gt;, and do NOT use import or export.
+  The file runs from file:// where ES modules are blocked and nothing would execute.
+- Do NOT use fetch() or XMLHttpRequest on local files. It always fails with
+  "TypeError: Failed to fetch" on file://.
+- All vocabulary data is embedded below. Do not load any code, library, font or
+  data from the network. The ONLY network request allowed in the whole app is the
+  pronunciation audio URL given further down.
+- All UI text (titles, buttons, messages, labels) must be in THAI.
+  The vocabulary itself stays Chinese, shown with its pinyin. Code and comments are English.
+
+## HOME SCREEN
+The app opens on a home screen with a title and two large buttons:
+  1. "จับคู่คำศัพท์"  -> matching mode (build this now)
+  2. "ผสมคำ"          -> combine mode (show the button, but it opens a screen
+                          that just says "เร็ว ๆ นี้" for now)
+Every screen has a way back to the home screen.
+
+## MATCHING MODE (build this fully)
+- One round shows 5 Chinese words on the left and their 5 Thai meanings on the right,
+  shuffled. The player taps a Chinese word then taps a Thai meaning.
+- Correct pair: both lock in green with a short animation, and the pinyin is revealed.
+- Wrong pair: both flash red briefly and unselect. Never block the player, never show a
+  dead end.
+- When all 5 pairs are matched, show a result card with the score and a
+  "รอบต่อไป" button that starts a new round with 5 different words.
+- Track how many of the 38 words the player has matched correctly at least once,
+  and show it as "จำได้แล้ว 12/38" on the home screen.
+- Save that progress in localStorage so it survives closing the browser.
+- Every Chinese word has a speaker button that plays its pronunciation using this
+  exact function (it is already tested and works from file://):
+
+function speak(hanzi) {
+  const url = 'https://translate.google.com/translate_tts?ie=UTF-8'
+    + '&amp;q=' + encodeURIComponent(hanzi)
+    + '&amp;tl=zh-CN&amp;total=1&amp;idx=0'
+    + '&amp;textlen=' + hanzi.length
+    + '&amp;client=tw-ob&amp;prev=input&amp;ttsspeed=1';
+  new Audio(url).play().catch(() => {
+    const u = new SpeechSynthesisUtterance(hanzi);
+    u.lang = 'zh-CN';
+    speechSynthesis.speak(u);
+  });
+}
+
+Use new Audio() directly. Never fetch() that URL.
+
+## VOCABULARY DATA — embed this exactly as a JavaScript array
+Format: compound word, pinyin, first character, second character, Thai meaning, category.
+Convert ONLY the 38 comma-separated rows below into a JavaScript array.
+Keep all six fields on every row. Do not add, drop or reword any row.
+
+父母,fùmǔ,父,母,พ่อแม่,ครอบครัว
+儿女,érnǚ,儿,女,ลูกชายลูกสาว,ครอบครัว
+兄弟,xiōngdì,兄,弟,พี่น้องชาย,ครอบครัว
+姐妹,jiěmèi,姐,妹,พี่น้องหญิง,ครอบครัว
+山水,shānshuǐ,山,水,ภูเขาและแม่น้ำ,ธรรมชาติ
+风雨,fēngyǔ,风,雨,ลมและฝน,ธรรมชาติ
+天地,tiāndì,天,地,ฟ้าดิน,ธรรมชาติ
+江河,jiānghé,江,河,แม่น้ำลำคลอง,ธรรมชาติ
+花草,huācǎo,花,草,ดอกไม้และหญ้า,ธรรมชาติ
+草木,cǎomù,草,木,พืชพรรณ,ธรรมชาติ
+日月,rìyuè,日,月,พระอาทิตย์และพระจันทร์,ธรรมชาติ
+星月,xīngyuè,星,月,ดวงดาวและพระจันทร์,ธรรมชาติ
+水火,shuǐhuǒ,水,火,น้ำและไฟ,ธรรมชาติ
+东西,dōngxi,东,西,สิ่งของ,ทิศทาง
+左右,zuǒyòu,左,右,ซ้ายขวา / ประมาณ,ทิศทาง
+买卖,mǎimai,买,卖,ซื้อขาย,กริยาคู่ตรงข้าม
+收发,shōufā,收,发,รับส่ง,กริยาคู่ตรงข้าม
+来往,láiwǎng,来,往,ไปมาหาสู่,กริยาคู่ตรงข้าม
+出入,chūrù,出,入,เข้าออก,กริยาคู่ตรงข้าม
+进退,jìntuì,进,退,รุกและถอย,กริยาคู่ตรงข้าม
+往返,wǎngfǎn,往,返,ไปกลับ,กริยาคู่ตรงข้าม
+攻守,gōngshǒu,攻,守,รุกและรับ,กริยาคู่ตรงข้าม
+教学,jiàoxué,教,学,สอนและเรียน,กริยาคู่ตรงข้าม
+讨论,tǎolùn,讨,论,อภิปราย แลกเปลี่ยนความคิดเห็น,กริยาคู่ตรงข้าม
+调查,diàochá,调,查,สืบสวน ตรวจสอบ,กริยาคู่ตรงข้าม
+高大,gāodà,高,大,สูงใหญ่,คุณศัพท์คู่ตรงข้าม
+长短,chángduǎn,长,短,ยาวสั้น,คุณศัพท์คู่ตรงข้าม
+大小,dàxiǎo,大,小,ใหญ่เล็ก,คุณศัพท์คู่ตรงข้าม
+多少,duōshǎo,多,少,มากน้อย,คุณศัพท์คู่ตรงข้าม
+好坏,hǎohuài,好,坏,ดีหรือไม่ดี,คุณศัพท์คู่ตรงข้าม
+快慢,kuàimàn,快,慢,เร็วช้า,คุณศัพท์คู่ตรงข้าม
+冷热,lěngrè,冷,热,ร้อนหนาว,คุณศัพท์คู่ตรงข้าม
+黑白,hēibái,黑,白,ดำขาว,คุณศัพท์คู่ตรงข้าม
+是非,shìfēi,是,非,ถูกผิด,คุณศัพท์คู่ตรงข้าม
+真假,zhēnjiǎ,真,假,จริงเท็จ,คุณศัพท์คู่ตรงข้าม
+成败,chéngbài,成,败,ความสำเร็จและความล้มเหลว,นามธรรม
+得失,déshī,得,失,ได้และเสีย,นามธรรม
+生死,shēngsǐ,生,死,ความเป็นความตาย,นามธรรม
+
+
+## VISUAL STYLE
+Use the system font. Do not load any font from the internet.
+Use exactly these colours:
+  background       oklch(97.5% 0.022 326)
+  card             oklch(99% 0.012 327)
+  text             oklch(30% 0.045 297)
+  border           oklch(88% 0.035 310)
+  secondary text   oklch(48% 0.04 300)
+  primary button   oklch(61% 0.19 345)
+  accent colours   oklch(90% 0.09 157) oklch(90% 0.085 55) oklch(87% 0.09 245)
+                   oklch(87% 0.095 298) oklch(85% 0.105 347)
+Cards have a large corner radius of 1.8rem. Buttons are capsule shaped, radius 999px.
+Soft shadows, 0 8px 22px. Chinese characters large and easy to read.
+Big tap targets. Must work on both desktop and phone.
+
+## NEVER BREAK
+Anywhere something can go wrong, show a short Thai message explaining what to do next.
+Never show a blank white screen and never freeze. I cannot debug code myself.
+
+Give me the complete single HTML file as ONE piece, ready to open.
+Never split it across two messages. If it will not fit in one chat message, put it
+in a canvas or an attached file. Keep the CSS and JavaScript compact so it fits.</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ เช็คว่าผ่าน (ดูจากแท็บ Preview ใน Canvas ได้เลย): เห็นหน้าแรกมี 2 ปุ่ม · กด "จับคู่คำศัพท์"
+      แล้วจับคู่ครบ 5 คู่ได้ · <span class="small">(ปุ่มลำโพงมีเสียงหรือไม่ ไม่นับ ข้อนี้ต้องใช้เน็ต
+        ถ้าเน็ตห้องแกว่งแล้วเงียบ ถือว่าผ่าน)</span><br>
+      <span class="small">ไม่ผ่านสักข้อ → เปิด <a href="#rescue">ตารางบรรทัดกู้ชีพ</a> ท้ายหน้า
+        คัดลอกประโยคไปวางต่อในแชทเดิม</span>
+    </div>
+
+    <hr>
+
+    <h2>Step 2: เพิ่มโหมดผสมคำ</h2>
+
+    <div class="panel note">
+      <strong>ขั้นนี้ทำอะไร:</strong> ต่อยอดไฟล์เดิมในแชทเดิม เพิ่มโหมดผสมคำและสมุดคำศัพท์เข้าไป<br>
+      <strong>ทำไปทำไม:</strong> เพื่อสอนว่า AI จำบริบทในแชทเดียวกันได้ เราแก้งานเดิมทีละขั้นได้
+      ไม่ต้องเริ่มใหม่ทุกครั้ง
+    </div>
+
+    <div class="panel note">
+      <strong>อ่านก่อนสอน:</strong> โหมดผสมคำในชุดคำศัพท์นี้<strong>ตื้นกว่าเกมแนว Infinite Craft</strong>
+      คำประสม 38 คำแตกเป็นตัวอักษรเดี่ยว 71 ตัว แต่<strong>ผสมได้แค่ชั้นเดียว</strong> คือ
+      ผสมได้คำแล้วเอาคำนั้นไปผสมต่อไม่ได้ ถ้าโยนตัวอักษร 71 ตัวลงจอเดียว โอกาสสุ่มถูกแค่ 1.5%
+      จะน่าหงุดหงิดมากกว่าสนุก<br><br>
+      prompt นี้จึงสั่งให้<strong>เล่นทีละหมวด</strong> (หมวดละ 8–10 ตัวอักษร) และวางกรอบเป็น
+      <strong>ปริศนา 38 ข้อที่มีเฉลยครบ</strong> แทนที่จะเป็นเกมสำรวจไม่รู้จบ
+      ซึ่งตรงกับสิ่งที่ครูอยากสอนจริง ๆ คือ <em>ตัวอักษรสองตัวไหนประกอบกันเป็นคำได้</em>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">ที่มาของ Prompt 2: อ้างอิงเกมที่มีอยู่แล้ว แล้วบอกว่าต่างตรงไหน</h3>
+      <p>ประโยคตั้งต้นจริงของขั้นนี้คือ:</p>
+      <div class="quote">
+        "อยากได้โหมดผสมคำ เอาแบบเว็บ Infinite Craft ลาก 父 ไปชน 母 แล้วได้ 父母"
+      </div>
+      <p><strong>การอ้างอิงเว็บที่ AI รู้จักอยู่แล้วเป็นเทคนิคที่ดีมาก</strong>
+        พิมพ์ชื่อเกมคำเดียวได้กลไกทั้งชุด ทั้งการลาก การชน การเฉลย โดยไม่ต้องบรรยายทีละอย่าง
+        แต่การอ้างอิงมาพร้อมของแถมที่เราไม่ได้อยากได้ และของแถมนั้นคือสิ่งที่ต้องเขียนกำกับ:</p>
+      <table>
+        <tr>
+          <th>ของแถมจากคำว่า Infinite Craft</th>
+          <th>ทำไมใช้กับห้องเรียนไม่ได้</th>
+          <th>เลยเติมอะไรลงไป</th>
+        </tr>
+        <tr>
+          <td>ผสมต่อได้ไม่รู้จบ</td>
+          <td>คำศัพท์ชุดนี้ผสมได้ชั้นเดียว ผสมได้คำแล้วเอาไปต่อไม่ได้ ผู้เล่นจะงงว่าทำไมตัน</td>
+          <td>"มี 38 คำ หาครบได้จริง" วางกรอบเป็นปริศนามีเฉลย ไม่ใช่เกมสำรวจไม่รู้จบ</td>
+        </tr>
+        <tr>
+          <td>เทของทั้งหมดลงจอเดียว</td>
+          <td>ตัวอักษร 71 ตัวจับคู่มั่วถูกแค่ 1.5% หงุดหงิดมากกว่าสนุก</td>
+          <td>"เล่นทีละหมวด" หมวดละ 8 ถึง 10 ตัว เดาถูกได้จริงในไม่กี่ครั้ง</td>
+        </tr>
+        <tr>
+          <td>การ์ดลอยดันกันตลอดเวลา</td>
+          <td>AI จะเขียนระบบฟิสิกส์ดันการ์ด ทำให้การ์ดสั่นและลากไม่ติด</td>
+          <td>"หาที่ว่างครั้งเดียวแล้ววางจบ ห้ามเขียนระบบฟิสิกส์"</td>
+        </tr>
+        <tr>
+          <td>ไม่มีความหมายกำกับ</td>
+          <td>ตัวอักษรเดี่ยว 71 ตัวเราไม่ได้ให้ความหมายไว้ AI จะแต่งเอง สอนผิด</td>
+          <td>"การ์ดโชว์แค่ตัวอักษร ความหมายขึ้นตอนจับคู่ถูกเท่านั้น"</td>
+        </tr>
+        <tr>
+          <td>เริ่มใหม่จากศูนย์</td>
+          <td>AI มักเขียนไฟล์ใหม่ทั้งอันจนโหมดจับคู่จาก Step 1 หายไป</td>
+          <td>"แก้ไฟล์เดิม เก็บทุกอย่างที่ใช้ได้อยู่แล้วไว้"</td>
+        </tr>
+      </table>
+      <p class="small">บทเรียนของ Step นี้: อ้างอิงของที่มีอยู่จริงเพื่อ<strong>ประหยัดคำอธิบาย</strong>
+        แล้วใช้ประโยคที่เหลือบอกว่า<strong>ต่างจากต้นฉบับตรงไหน</strong> อย่าอ้างอิงเฉย ๆ แล้วปล่อย
+        เพราะจะได้ของที่เหมือนต้นฉบับในจุดที่เราไม่ได้อยากได้</p>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 2</h3>
+        <button class="copy" data-target="p2">📋 คัดลอก Prompt 2</button>
+      </div>
+      <div class="prompt-body">
+        <pre id="p2">The game works. Now build the second mode: "ผสมคำ" (combine words).
+Update the existing file, keeping everything that already works.
+Give me back the COMPLETE updated HTML file as ONE piece.
+Do not give me a diff, a patch, an excerpt, or instructions to edit the code myself.
+I cannot edit code and I cannot join two halves of a file together.
+Never split the file across two messages. If it will not fit in one chat message,
+put it in a canvas or an attached file instead. Keep the CSS and JavaScript compact
+so that it fits.
+
+## HOW COMBINE MODE WORKS
+Every word in the data splits into two single characters, for example 父母 = 父 + 母.
+The player's job is to find which two characters form a real word.
+
+- The player first picks a category: ครอบครัว, ธรรมชาติ, ทิศทาง, กริยาคู่ตรงข้าม,
+  คุณศัพท์คู่ตรงข้าม, นามธรรม.
+  Only that category's characters appear on screen — never all of them at once.
+  This keeps each round small enough to actually solve.
+- The single characters from that category appear as cards, shuffled.
+  A character card shows ONLY the character itself. Do NOT display a meaning or a
+  pinyin for a single character: I did not give you those, and inventing them would
+  teach my students something wrong. Meanings appear only after a correct pair.
+- The player drags one character onto another, or taps two characters in a row on phone.
+- If those two characters form a word in the data, in either order, it counts as found:
+  play a short reveal animation and show a result card with the compound word,
+  its pinyin, its Thai meaning, and a speaker button.
+  Show an HSK badge when the word has one:
+  HSK1 东西 | HSK2 左右 | HSK3 买卖 | HSK3 风雨 | HSK4 往返 | HSK4 出入
+  HSK5 是非 | HSK5 成败 | HSK5 得失 | HSK5 生死
+  Show the same badge in matching mode too.
+- If they do not form a word, show a small Thai message and separate the cards again.
+  Never freeze, never throw an error.
+- Cards must never overlap. When placing a card or when a drop does not form a word,
+  compute the nearest free position once and place it there. That is all.
+  Do NOT write a physics engine and do NOT run an animation loop that keeps pushing
+  cards apart — it makes cards jitter and become impossible to drag.
+- Show progress for the category, for example "พบแล้ว 3/4" , and overall "พบแล้ว 12/38".
+- Found words are saved in localStorage together with the matching-mode progress.
+
+## FRAME IT AS A PUZZLE, NOT AN ENDLESS GAME
+There are exactly 38 words to find and the player can find them all. Make that clear:
+show total progress, and when a category is complete show a short congratulation
+and suggest the next category. When all 38 are found show a final celebration screen.
+
+## ALSO ADD
+A "สมุดคำศัพท์" screen reachable from the home screen. It lists every word the player
+has found, showing the Chinese word, pinyin, Thai meaning and a speaker button.
+It has one search box that searches Chinese, pinyin and Thai at the same time.
+It has a "เผยเฉลย" toggle button: when on, the words not yet found appear as greyed
+rows showing the answer, for example 父 + 母 = 父母. The button must clearly show
+whether it is currently on or off. When searching, already-found words appear first.
+
+## RULES THAT STILL APPLY
+Single self-contained HTML file. No external libraries. No &lt;script type="module"&gt;,
+no import, no export. No fetch of local files. All visible text in Thai.
+Same colours and shapes as before. Never show a blank white screen.
+
+Give me the updated file.</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ เช็คว่าผ่าน: กด "ผสมคำ" → เลือกหมวดครอบครัว → ลาก 父 ไปชน 母 แล้วได้ 父母<br>
+      <span class="small">ไม่ผ่าน → <a href="#rescue">ตารางบรรทัดกู้ชีพ</a> · โหมดจับคู่จาก Step 1
+        ต้องยังเล่นได้เหมือนเดิม ถ้าหายไปให้พิมพ์ว่า "โหมดจับคู่คำศัพท์หายไป ช่วยเอากลับมาโดยไม่ลบโหมดผสมคำ"</span>
+    </div>
+
+    <hr>
+
+    <h2>Step 3: เซฟไฟล์เก็บไว้ <span class="time">(นาทีที่ 27)</span></h2>
+    <div class="panel note">
+      <strong>ขั้นนี้ทำอะไร:</strong> เอาโค้ดออกจากหน้าแชทมาเป็นไฟล์ <code>game.html</code> ในเครื่อง<br>
+      <strong>ทำไปทำไม:</strong> โค้ดที่อยู่ในแชทอย่างเดียวหายได้ ไฟล์ในเครื่องดับเบิลคลิกเปิดเล่นได้ตลอด ไม่ต้องมีเน็ต
+    </div>
+
+    <table>
+      <tr>
+        <th>ลำดับ</th>
+        <th>วิธี</th>
+      </tr>
+      <tr>
+        <td><strong>1</strong></td>
+        <td>ถ้า Gemini เปิดโค้ดใน Canvas → กดจุดสามจุดมุมขวาบนของ Canvas → <strong>Export / Download</strong> จบ</td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td>ถ้าไม่มีปุ่ม พิมพ์ต่อในแชทว่า <code>ช่วยส่งเป็นไฟล์ให้ดาวน์โหลดได้เลย</code></td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td>คัดลอกเอง (เสี่ยงพัง ใช้เป็นทางสุดท้าย) ดูด้านล่าง</td>
+      </tr>
+    </table>
+
+    <div class="panel warn">
+      <strong>ถ้าต้องคัดลอกเอง</strong><br>
+      <strong>Mac:</strong> เปิด TextEdit → เมนู <strong>Format → Make Plain Text</strong> (ต้องทำก่อน!) → วางโค้ด →
+      เซฟชื่อ <code>game.html</code><br>
+      <strong>Windows:</strong> เปิด Notepad → วางโค้ด → Save As → ช่อง <strong>"Save as type" เลือก All Files</strong>
+      → ชื่อ <code>game.html</code><br>
+      <strong>Linux:</strong> เปิดโปรแกรมแก้ข้อความที่มีอยู่แล้ว (Text Editor / gedit / Kate) → วางโค้ด → Save As → ชื่อ
+      <code>game.html</code><br><br>
+      ตั้งชื่อไฟล์เป็นภาษาอังกฤษ ปลอดภัยกว่าชื่อภาษาไทย<br>
+      ถ้าดับเบิลคลิกแล้วเปิดเป็นหน้าโค้ด แปลว่านามสกุลไฟล์ผิด ให้ทำขั้นนี้ใหม่
+    </div>
+
+    <hr>
+
+    <h2>Step 4: เพิ่มคำศัพท์ของตัวเอง <span class="pill">ทำที่บ้าน</span></h2>
+    <div class="panel note">
+      <strong>ขั้นนี้ทำอะไร:</strong> เพิ่มหน้าวางคำศัพท์จาก Word ลงไปในเกม พร้อมปุ่มสำรองและกู้คืนข้อมูล<br>
+      <strong>ทำไปทำไม:</strong> เกมจะใช้สอนจริงได้ก็ต่อเมื่อครูเปลี่ยนคำศัพท์เองได้
+      ขั้นนี้เลยเป็นขั้นที่ทำให้มันกลายเป็นเครื่องมือของครูจริง ๆ
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">ที่มาของ Prompt 3: เริ่มจากงานที่ครูทำอยู่แล้วทุกวัน</h3>
+      <p>ประโยคตั้งต้นจริงของขั้นนี้คือ:</p>
+      <div class="quote">
+        "อยากเพิ่มคำศัพท์ของตัวเองได้ ก๊อปตารางจาก Word มาวางเลยได้ไหม"
+      </div>
+      <p>ขั้นนี้ต่างจาก 2 ขั้นแรก เพราะโจทย์ไม่ได้มาจากจินตนาการ แต่มาจากพฤติกรรมจริงของครู
+        คือมีคำศัพท์อยู่ใน Word อยู่แล้ว วิธีคิด prompt แบบนี้คือ<strong>เดินตามสิ่งที่ผู้ใช้จะทำจริง
+          แล้วอุดตรงที่จะสะดุด</strong>:</p>
+      <table>
+        <tr>
+          <th>ครูจะทำอะไร</th>
+          <th>ตรงไหนจะสะดุด</th>
+          <th>เลยเติมอะไรลงไป</th>
+        </tr>
+        <tr>
+          <td>ลากคลุมตารางใน Word แล้วก๊อป</td>
+          <td>ตารางจาก Word ติดมาเป็น Tab ไม่ใช่จุลภาค AI มักรองรับแค่จุลภาค วางแล้วไม่ขึ้นสักคำ</td>
+          <td>"รับทั้งจุลภาคและ Tab"</td>
+        </tr>
+        <tr>
+          <td>วางแล้วกดเพิ่ม</td>
+          <td>ถ้ามีบรรทัดเสีย 1 บรรทัด ระบบอาจล้มทั้งชุด</td>
+          <td>"ข้ามบรรทัดเสีย เก็บที่เหลือ แล้วบอกว่าข้ามบรรทัดไหน"</td>
+        </tr>
+        <tr>
+          <td>กลับไปเล่นเกมทันที</td>
+          <td>ถ้าคำใหม่ต้องไป "ค้นพบ" ก่อนถึงจะเล่นได้ ครูจะไม่เห็นอะไรเกิดขึ้นแล้วคิดว่าพัง</td>
+          <td>"คำที่ครูเพิ่มเองใช้ได้ทันทีทั้ง 2 โหมด"</td>
+        </tr>
+        <tr>
+          <td>เพิ่มคำเดิมซ้ำ</td>
+          <td>ได้คำซ้ำเต็มไปหมด</td>
+          <td>"เจอคำซ้ำให้ทับของเดิม แล้วบอกว่าทับไปกี่คำ"</td>
+        </tr>
+        <tr>
+          <td>ล้างประวัติเบราว์เซอร์วันหนึ่ง</td>
+          <td>คำที่พิมพ์เองทั้งหมดหายเกลี้ยง</td>
+          <td>"ต้องมีปุ่มสำรองและกู้คืนข้อมูล ห้ามตัดทิ้ง"</td>
+        </tr>
+      </table>
+      <p class="small">บทเรียนของ Step นี้: prompt ที่ดีที่สุดไม่ได้เริ่มจาก "อยากได้ฟีเจอร์อะไร"
+        แต่เริ่มจาก "คนจะใช้มันยังไง" แล้วเขียนกันไว้ทีละจุดที่คนจะสะดุด</p>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 3</h3>
+        <button class="copy" data-target="p3">📋 คัดลอก Prompt 3</button>
+      </div>
+      <div class="prompt-body">
+        <pre id="p3">Add a "เพิ่มคำของฉัน" screen to the existing file, keeping everything that works.
+Give me back the COMPLETE updated HTML file as ONE piece, not a diff or an excerpt.
+Never split it across two messages. If it will not fit, put it in a canvas or an
+attached file.
+
+I keep my vocabulary in a Word document and I want to paste many words at once.
+
+- A text box where I paste many lines, one word per line, like this:
+    父母	fùmǔ	父	母	พ่อแม่	ครอบครัว
+  Accept BOTH a comma and a Tab as the separator, because pasting from a Word table
+  produces Tabs. Ignore blank lines and extra spaces.
+- Show a preview of what will be added and how many lines could not be read,
+  before I confirm.
+- Words I add are available immediately in both game modes. I do not have to
+  discover them first — I am the one who entered them.
+- If a word I add has the same Chinese characters as an existing one, replace the old
+  one and tell me how many were replaced. Do not create duplicates.
+- A word must be exactly two Chinese characters, because combine mode splits it into
+  two. If a line has a word that is not two characters, skip it and say why.
+- If a line is malformed, skip that line, keep the rest, and tell me which line numbers
+  were skipped. Never show a blank white screen.
+- After adding, show a confirmation line such as
+  "เพิ่มแล้ว 12 คำ ลองเล่นได้เลย".
+
+Also add two buttons, and never remove them:
+  "บันทึกข้อมูลของฉัน"  exports everything I added plus my progress as one .json file,
+                        using a Blob and an <a download> link
+  "กู้คืนข้อมูล"        reads that file back with <input type="file"> and
+                        FileReader.readAsText, never with fetch()
+                        Merge by Chinese word, keep my existing progress, and show a
+                        Thai error if the file is not readable.
+This matters because the data lives in the browser and clearing browser history
+would erase all of it.
+
+Same rules as before: one self-contained HTML file, no external libraries,
+no &lt;script type="module"&gt;, no import or export, no fetch of local files,
+all visible text in Thai, never a blank white screen.
+
+Give me the updated file.</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ เช็คว่าผ่าน: ก๊อปตารางจาก Word มาวาง แล้วคำใหม่เล่นได้ทันทีทั้ง 2 โหมด<br>
+      <span class="small">ทำเสร็จแล้วกด "บันทึกข้อมูลของฉัน" เก็บไฟล์ไว้ 1 ครั้ง
+        คำที่พิมพ์เองจะได้ไม่หายตอนล้างประวัติเบราว์เซอร์</span>
+    </div>
+
+    <hr>
+
+    <h2>สำหรับผู้สอน</h2>
+
+    <div class="panel warn">
+      <strong>ยังขาดภาพหน้าจอ</strong> คู่มือฉบับนี้ยังเป็นข้อความล้วน ภาพประกอบทีละขั้นแบบคู่มือติดตั้ง Windows
+      ต้องแคปจาก Gemini ตัวจริงตอนซ้อม เพราะหน้าตา Gemini เปลี่ยนเป็นระยะ
+      ภาพที่วาดขึ้นเองจะทำให้ผู้เรียนหลงมากกว่าเดิม<br>
+      ตอนซ้อม 1 รอบ ให้แคป 4 ภาพนี้ไว้: หน้า Gemini ตอนวาง prompt · ตอนโค้ดขึ้นใน Canvas ·
+      ปุ่ม Export ใน Canvas · เกมที่เปิดจากไฟล์ในเครื่องแล้ว
+    </div>
+
+    <h3 id="rescue">บรรทัดกู้ชีพ: ให้ผู้เรียนพิมพ์ต่อในแชทตอนพัง</h3>
+    <p class="small">วิธีใช้: คัดลอกข้อความในช่องขวา ไปวางต่อ<strong>ในแชทเดิม</strong> แล้วกด Enter ไม่ต้องแก้โค้ดเอง
+    </p>
+    <table>
+      <tr>
+        <th>อาการ</th>
+        <th>ให้พิมพ์</th>
+      </tr>
+      <tr>
+        <td>หน้าจอขาว ไม่ขึ้นอะไรเลย</td>
+        <td><code>หน้าจอขาว ไม่ขึ้นอะไรเลย ช่วยหาสาเหตุแล้วแก้ให้หน่อย</code></td>
+      </tr>
+      <tr>
+        <td>โค้ดขาดกลางคัน</td>
+        <td><code>โค้ดไม่ครบ ช่วยส่งใหม่ทั้งไฟล์เป็นชิ้นเดียว ใส่ใน canvas ก็ได้ อย่าแบ่งเป็นสองข้อความ</code></td>
+      </tr>
+      <tr>
+        <td>Gemini ส่งโค้ดมา 2 ข้อความ</td>
+        <td><code>ขอเป็นไฟล์เดียวจบ อย่าแบ่ง ใส่ใน canvas ให้หน่อย</code></td>
+      </tr>
+      <tr>
+        <td>จับคู่แล้วไม่มีอะไรเกิดขึ้น</td>
+        <td><code>กดจับคู่แล้วไม่เกิดอะไรขึ้น ช่วยแก้ให้หน่อย</code></td>
+      </tr>
+      <tr>
+        <td>การ์ดซ้อนทับกัน</td>
+        <td><code>การ์ดบนจอซ้อนทับกัน ช่วยแก้ให้วางไม่ทับกัน</code></td>
+      </tr>
+      <tr>
+        <td>ไม่มีเสียง</td>
+        <td><code>กดปุ่มลำโพงแล้วไม่มีเสียง ช่วยแก้ให้หน่อย</code></td>
+      </tr>
+    </table>
+
+    <h3>ปัญหาที่เจอบ่อย แก้เร็ว</h3>
+    <table>
+      <tr>
+        <th>ปัญหา</th>
+        <th>วิธีแก้</th>
+      </tr>
+      <tr>
+        <td>กดปุ่มคัดลอกแล้ววางใน Gemini ไม่ขึ้น</td>
+        <td>ต้องคลิกในช่องพิมพ์ข้อความของ Gemini ให้มีเคอร์เซอร์กะพริบก่อน แล้วค่อยกด Ctrl+V (Windows) หรือ Cmd+V (Mac)
+        </td>
+      </tr>
+      <tr>
+        <td>Gemini ตอบเป็นคำอธิบายยาว ๆ ไม่ใช่โค้ด</td>
+        <td>ให้พิมพ์ <code>ขอเป็นไฟล์ HTML ไฟล์เดียวจบ ส่งโค้ดมาเลย ไม่ต้องอธิบาย</code></td>
+      </tr>
+      <tr>
+        <td>ผู้เรียนเปิดแชทใหม่ตอน Prompt 2</td>
+        <td>ต้องอยู่แชทเดิม ให้ย้อนกลับไปแชทเดิมแล้ววางใหม่</td>
+      </tr>
+      <tr>
+        <td>AI ใส่ <code>&lt;script type="module"&gt;</code> มา</td>
+        <td>ให้พิมพ์ <code>ห้ามใช้ type="module" เพราะไฟล์เปิดแบบ file:// ช่วยแก้เป็น script ธรรมดา</code></td>
+      </tr>
+      <tr>
+        <td>AI ใช้ React หรือ Tailwind CDN</td>
+        <td>ให้พิมพ์ <code>ห้ามใช้ไลบรารีจากภายนอก ช่วยเขียนใหม่ด้วย JavaScript ธรรมดา</code></td>
+      </tr>
+      <tr>
+        <td>ดับเบิลคลิกแล้วขึ้นหน้าโค้ด</td>
+        <td>นามสกุลไฟล์ผิด ทำขั้นเซฟไฟล์ใหม่</td>
+      </tr>
+      <tr>
+        <td>ตามไม่ทัน</td>
+        <td>ให้เก็บ prompt ไปทำที่บ้าน และเปิด <a href="https://dou-jeen.vercel.app" target="_blank"
+            rel="noopener">dou-jeen.vercel.app</a> เล่นดูตัวอย่างไปก่อน</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <h2>หมายเหตุทางเทคนิค <span class="small">(ผู้สอนอ่าน ผู้เรียนไม่ต้อง)</span></h2>
+    <p class="small">ข้อจำกัดพวกนี้ทดสอบจริงบน Chrome แล้ว เป็นเหตุผลที่ prompt ต้องเขียนแบบนั้น<br>
+      <strong>อ่านไม่รู้เรื่องข้ามได้เลย ไม่กระทบการสอน</strong> ส่วนนี้มีไว้ตอบตอนมีคนถามว่า "ทำไมต้องสั่งแบบนี้"
+    </p>
+    <table>
+      <tr>
+        <th>เรื่อง</th>
+        <th>ผล</th>
+        <th>ผลต่อ prompt</th>
+      </tr>
+      <tr>
+        <td><code>fetch()</code> ไฟล์ในเครื่องจาก <code>file://</code></td>
+        <td class="no">✗ บล็อก</td>
+        <td>ต้องฝังข้อมูลใน prompt ห้ามให้อ่านไฟล์ข้าง ๆ</td>
+      </tr>
+      <tr>
+        <td><code>localStorage</code> บน <code>file://</code></td>
+        <td class="ok">✓ ใช้ได้</td>
+        <td>เก็บความคืบหน้าได้</td>
+      </tr>
+      <tr>
+        <td><code>&lt;script type="module"&gt;</code> / <code>import</code></td>
+        <td class="no">✗ บล็อก</td>
+        <td>ต้องสั่งห้าม เพราะ AI ชอบเขียนมาเอง</td>
+      </tr>
+      <tr>
+        <td><code>&lt;audio&gt;</code> ข้าม origin จาก <code>file://</code></td>
+        <td class="ok">✓ ใช้ได้</td>
+        <td>ปุ่มฟังเสียงทำงานได้โดยไม่ต้องมี server</td>
+      </tr>
+      <tr>
+        <td>Google TTS URL</td>
+        <td class="ok">✓ เรียกได้เลย</td>
+        <td>ไม่ต้องสมัคร ไม่ต้องมีรหัสลับ ไม่ต้องลงโปรแกรมเสริม</td>
+      </tr>
+      <tr>
+        <td>คำศัพท์ 38 คำ</td>
+        <td class="ok">✓ ~2 KB</td>
+        <td>เล็กพอที่จะฝังใน prompt ได้ ไม่ต้องพึ่งอินเทอร์เน็ต</td>
+      </tr>
+    </table>
+
+    <div class="panel note">
+      <strong>โครงสร้างข้อมูล</strong>: 38 คำประสม แตกเป็นตัวอักษรเดี่ยว 71 ตัว
+      มีตัวอักษรที่ใช้ซ้ำแค่ 5 ตัว (水 草 月 往 大) และ<strong>ไม่มีคำประสมไหนเอาไปผสมต่อได้</strong><br>
+      แปลว่าโหมดผสมคำเป็น<strong>ปริศนาชั้นเดียว 38 ข้อ</strong> ไม่ใช่เกมสำรวจแบบต่อยอดไปเรื่อย ๆ
+      prompt จึงออกแบบให้เล่นทีละหมวดและแสดงความคืบหน้าเป็น x/38
+    </div>
+
+    <div class="panel warn">
+      <strong>ยังไม่ได้ทดสอบ</strong>: Gemini Canvas แสดง preview และปุ่ม Export ได้จริงไหม ·
+      ต่างกันไหมบน Brave / Safari · Gemini tier ฟรีตัดโค้ดที่ความยาวเท่าไหร่<br>
+      ถ้ามีเวลา <strong>ซ้อมเอง 1 รอบก่อนสอน</strong> ด้วย Gemini tier เดียวกับที่ผู้เรียนใช้
+      จะจับปัญหาได้มากกว่าที่เดาไว้ทั้งหมด และได้ภาพหน้าจอจริงไปเติมในคู่มือด้วย
+    </div>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('button.copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.getElementById(btn.dataset.target);
+        if (!el) return;
+        var text = el.textContent;
+        var done = function () {
+          var old = btn.textContent;
+          btn.textContent = '✓ คัดลอกแล้ว';
+          btn.classList.add('done');
+          setTimeout(function () {
+            btn.textContent = old;
+            btn.classList.remove('done');
+          }, 1600);
+        };
+        // navigator.clipboard needs a secure context; this page may be opened from
+        // file:// where it is unavailable, so fall back to a hidden textarea.
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+        } else {
+          fallback(text, done);
+        }
+      });
+    });
+    function fallback(text, done) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); }
+      catch (e) { alert('คัดลอกอัตโนมัติไม่ได้ กรุณาเลือกข้อความแล้วกด Ctrl+C / Cmd+C'); }
+      document.body.removeChild(ta);
+    }
+  </script>
+</body>
+
+</html>

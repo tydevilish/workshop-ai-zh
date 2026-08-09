@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>เวิร์กช็อป: สร้างเว็บฝึกเขียนตัวอักษรจีนด้วยการลากเส้น ด้วย AI</title>
+  <style>
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_XBd.ttf") format("truetype");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: oklch(97.5% 0.022 326);
+      --surface: oklch(99% 0.012 327);
+      --surface-soft: oklch(95.5% 0.032 318);
+      --ink: oklch(30% 0.045 297);
+      --line: oklch(88% 0.035 310);
+      --muted: oklch(48% 0.04 300);
+      --action: oklch(61% 0.19 345);
+      --action-hover: oklch(54% 0.2 345);
+      --mint: oklch(90% 0.09 157);
+      --peach: oklch(90% 0.085 55);
+      --sky: oklch(87% 0.09 245);
+      --lilac: oklch(87% 0.095 298);
+      --shadow: oklch(78% 0.055 313 / .3);
+      --code-bg: oklch(26% 0.03 297);
+      --code-ink: oklch(92% 0.02 320);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'LINE Seed Sans TH', -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai",
+        "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.7;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 85px 20px 80px
+    }
+
+    @media (max-width: 768px) {
+      .wrap { padding-top: 32px; padding-bottom: 90px }
+    }
+
+    /* Custom Scrollbar matching workshop background */
+    ::-webkit-scrollbar { width: 14px; height: 14px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border: 4px solid var(--bg);
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    h1 {
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+      line-height: 1.25;
+      margin: 0 0 8px;
+      letter-spacing: -.02em
+    }
+
+    h2 {
+      font-size: clamp(1.25rem, 3vw, 1.6rem);
+      margin: 48px 0 12px;
+      letter-spacing: -.015em
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 24px 0 8px
+    }
+
+    p {
+      margin: 0 0 12px
+    }
+
+    a {
+      color: var(--action)
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 24px
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 1.4rem;
+      padding: 20px 22px;
+      margin: 16px 0;
+      box-shadow: 0 4px 14px var(--shadow);
+    }
+
+    .panel.warn {
+      background: oklch(97% 0.05 55);
+      border-color: oklch(85% 0.09 55)
+    }
+
+    .panel.note {
+      background: var(--surface-soft)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: .95rem;
+      display: block;
+      overflow-x: auto
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 8px 11px;
+      text-align: left;
+      vertical-align: top
+    }
+
+    th {
+      background: var(--surface-soft);
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    code {
+      background: var(--surface-soft);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: .9em
+    }
+
+    .pill {
+      display: inline-block;
+      background: var(--lilac);
+      border-radius: 999px;
+      padding: 2px 12px;
+      font-size: .82rem;
+      font-weight: 700
+    }
+
+    .prompt-card {
+      border: 2px solid var(--action);
+      border-radius: 1.4rem;
+      overflow: hidden;
+      margin: 20px 0;
+      background: var(--surface)
+    }
+
+    .prompt-head {
+      padding: 16px 20px;
+      background: oklch(94% 0.06 345);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .prompt-head h3 {
+      margin: 0;
+      font-size: 1.15rem
+    }
+
+    .prompt-body {
+      padding: 0
+    }
+
+    .explain {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface)
+    }
+
+    .explain ul {
+      margin: 8px 0 0;
+      padding-left: 20px
+    }
+
+    .explain li {
+      margin-bottom: 4px
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px 20px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      overflow-x: auto;
+      font-size: .84rem;
+      line-height: 1.6;
+      white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    button.copy {
+      border: 0;
+      border-radius: 999px;
+      background: var(--action);
+      color: #fff;
+      font-weight: 800;
+      font-size: .9rem;
+      padding: 9px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+
+    button.copy:hover {
+      background: var(--action-hover)
+    }
+
+    button.copy.done {
+      background: oklch(55% 0.14 158)
+    }
+
+    .check {
+      background: var(--mint);
+      border-radius: 1rem;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-weight: 700
+    }
+
+    .time {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      color: var(--action);
+      white-space: nowrap
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 40px 0
+    }
+
+    .small {
+      font-size: .9rem;
+      color: var(--muted)
+    }
+
+    .ok {
+      color: oklch(48% 0.14 158);
+      font-weight: 800
+    }
+
+    .no {
+      color: oklch(53% 0.19 24);
+      font-weight: 800
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <h1>สร้างเว็บฝึกเขียนตัวอักษรจีนด้วยการลากเส้น ด้วย AI</h1>
+    <p class="lead">
+      เวิร์กช็อป 30 นาที · สำหรับครูสอนภาษาจีนที่เขียนโปรแกรมไม่เป็น<br>
+      ใช้แค่ <strong>เบราว์เซอร์ + บัญชี Gemini + อินเทอร์เน็ต</strong> ไม่ต้องติดตั้งอะไร ไม่ต้องสมัครอะไรเพิ่ม
+    </p>
+
+    <div class="panel warn">
+      <strong>เป้าหมายจริงคือฝึก prompt ไม่ใช่ให้ทุกคนได้แอปเหมือนกันเป๊ะ</strong><br>
+      ผลลัพธ์ของแต่ละคนจะต่างกันแน่นอน บอกผู้เรียนตั้งแต่ต้น นั่นคือบทเรียน ไม่ใช่ความผิดพลาด<br>
+      สิ่งเดียวที่ต้องกันคือ <strong>ไม่มีใครกลับบ้านมือเปล่า</strong>
+    </div>
+
+    <h2>สิ่งที่จะได้</h2>
+    <p>ไฟล์ HTML ไฟล์เดียว เปิดในเบราว์เซอร์ได้เลย เป็น "กระดานฝึกเขียน" ที่ใช้ไลบรารีโอเพนซอร์ส
+      <strong>Hanzi Writer</strong> (MIT license) วาดตัวอักษรจีนด้วยเส้นขีดจริง พร้อมระบบฝึกเขียนที่ตรวจสอบ
+      การลากเทียบกับข้อมูลจริงในตัว และนำเข้าคำศัพท์จำนวนมากได้ทั้งจากไฟล์ JSON หรือ PDF โดยตรง —
+      ต้องมีอินเทอร์เน็ตตอนเปิดใช้งาน แลกกับความแม่นยำที่ทำเองไม่ได้ระดับนี้
+    </p>
+    <table>
+      <tr>
+        <th>ฟีเจอร์</th>
+        <th>ทำอะไร</th>
+      </tr>
+      <tr>
+        <td><strong>เลือกตัวอักษร</strong></td>
+        <td>เลือกจากรายการที่ฝังไว้ในโค้ด พร้อมพินอินและความหมาย</td>
+      </tr>
+      <tr>
+        <td><strong>ลำดับขีดจริง</strong></td>
+        <td>กดปุ่มแล้วดูแอนิเมชันเส้นขีดจริงของตัวอักษร (ไม่ใช่เส้นประมาณ)</td>
+      </tr>
+      <tr>
+        <td><strong>ฝึกเขียน</strong></td>
+        <td>ลากตามตัวอักษร ระบบตรวจสอบรูปทรง+ลำดับขีดเทียบกับข้อมูลจริงให้อัตโนมัติ</td>
+      </tr>
+      <tr>
+        <td><strong>นำเข้าคำศัพท์</strong></td>
+        <td>นำเข้าไฟล์ JSON หรือ PDF ตรงในแอปได้เลย หรือให้ Gemini วิเคราะห์ PDF เป็น JSON คุณภาพดีกว่าก่อนก็ได้</td>
+      </tr>
+      <tr>
+        <td><strong>จัดหมวดหมู่ใหม่</strong></td>
+        <td>ให้ AI ตรวจสอบและจัดหมวดทั้งชุดใหม่ได้ทุกเมื่อ ถ้าหมวดที่มีอยู่ดูไม่เข้าท่า</td>
+      </tr>
+    </table>
+    <p class="small">ใช้ตัวอักษร 6 ตัวเป็นชุดตั้งต้น ไม่ต้องฝังพิกัดเส้นขีดเอง เพราะไลบรารีดึงข้อมูลจริงให้อัตโนมัติ</p>
+
+    <h2>ตารางเวลา 30 นาที</h2>
+    <table>
+      <tr>
+        <th>นาที</th>
+        <th>ทำอะไร</th>
+      </tr>
+      <tr>
+        <td class="time">0–5</td>
+        <td>อธิบายว่าจะสร้างอะไร · เปิด Gemini · เช็คว่าอินเทอร์เน็ตในห้องใช้ได้จริง</td>
+      </tr>
+      <tr>
+        <td class="time">5–17</td>
+        <td><strong>Prompt 1</strong> → กระดานเขียนด้วย Hanzi Writer + แท็บหมวด <span
+            class="pill">ห้ามพลาดขั้นนี้</span></td>
+      </tr>
+      <tr>
+        <td class="time">17–24</td>
+        <td><strong>Prompt 2</strong> → เพิ่มปุ่มนำเข้า JSON/PDF ในไฟล์เดิม · ลองนำเข้าไฟล์ PDF จริงดูก่อน
+          (หมวดจะว่างไว้)</td>
+      </tr>
+      <tr>
+        <td class="time">24–27</td>
+        <td><strong>Prompt 3</strong> (ถ้ามีเวลา) → แนบ PDF เดิมให้ Gemini วิเคราะห์เป็น JSON คุณภาพดีกว่า
+          แล้วนำเข้าผ่าน Prompt 2 อีกที</td>
+      </tr>
+      <tr>
+        <td class="time">27–30</td>
+        <td>เซฟไฟล์เก็บไว้ · แนะนำขั้นตอนที่ 4 ท้ายหน้า (วิธีนำเข้าไฟล์และสร้างหมวดหมู่ด้วย AI) ให้ไปลองต่อ</td>
+      </tr>
+    </table>
+
+    <div class="panel">
+      <strong>ทำไม Prompt 1 ห้ามพลาด</strong><br>
+      ได้กระดานฝึกเขียนที่ใช้งานได้จริง มีเส้นขีดถูกต้องแม่นยำเพราะดึงจากข้อมูลจริง (ไม่ใช่พิกัดกะเอง)
+      ใครผ่านขั้นนี้ถือว่ามีผลงานแล้ว ต่อให้ Prompt 2/3/4 พังก็ยังได้ของกลับบ้าน<br>
+      <strong>ข้อควรระวัง:</strong> ต้องมีอินเทอร์เน็ตตลอดตอนที่ใช้แอปนี้
+    </div>
+
+    <hr>
+
+    <h2>Prompt 1: สร้างเว็บฝึกเขียนตัวอักษรจีน</h2>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 1</h3>
+        <button class="copy" data-target="p1">📋 คัดลอก Prompt 1</button>
+      </div>
+      <div class="explain">
+        <strong>prompt นี้ทำงานยังไง</strong>
+        <ul>
+          <li><strong>โหลดไลบรารีจาก CDN สาธารณะแค่ตัวเดียว</strong> (<code>hanzi-writer</code>) แทนการเขียน canvas เอง
+            ไลบรารีนี้ดึงข้อมูลเส้นขีดจริงของตัวอักษรจากฐานข้อมูลสาธารณะของมันเองอัตโนมัติ ไม่ต้องกะพิกัดเอง</li>
+          <li><strong>ใช้ <code>writer.animateCharacter()</code></strong> สำหรับปุ่มเล่นลำดับสโตรก —
+            เป็นแอนิเมชันเส้นขีดจริงของตัวอักษร ไม่ใช่เส้นประมาณ</li>
+          <li><strong>ใช้ <code>writer.quiz()</code> ในตัวไลบรารีแทนการสร้างระบบตรวจสอบเอง</strong>
+            เพราะไลบรารีมีข้อมูลจริงเทียบได้อยู่แล้วว่าขีดที่ลากตรงกับขีดจริงหรือไม่
+            ตรงไปตรงมาและแม่นยำกว่าการเทียบพิกเซลหรือกะพิกัดเอง</li>
+          <li><strong>ใช้ SpeechSynthesisUtterance สำหรับปุ่มออกเสียง</strong>: เป็นฟังก์ชันที่มากับเบราว์เซอร์อยู่แล้ว
+            ไม่ต้องเรียก <code>fetch</code> ไปที่บริการ TTS อื่น และไม่ต้องเพิ่มไลบรารีอีกตัว</li>
+          <li><strong>เริ่มต้นด้วย <code>characters = []</code> ไม่มีตัวอักษรตั้งต้นเลย</strong>:
+            แอปนี้ไม่มีคำศัพท์มาให้ตั้งแต่ต้น ผู้ใช้ต้องเพิ่มเองทั้งหมด (ผ่านฟีเจอร์นำเข้าที่จะเพิ่มใน Prompt ถัดไป)
+            จึงต้องออกแบบ UI ให้รองรับกรณี "ไม่มีตัวอักษรเลย" ตั้งแต่เปิดแอปครั้งแรก</li>
+          <li><strong>สั่งเจาะจงเรื่อง empty state</strong>: ถ้าไม่สั่งไว้ตรงๆ AI มักลืมเคสนี้แล้วพยายามสร้าง writer
+            ให้ตัวอักษรที่ไม่มีอยู่จริง (undefined) ทำให้หน้าจอพังหรือขึ้น error ตั้งแต่เปิดแอปครั้งแรก</li>
+          <li><strong>บอกชัดตั้งแต่ต้นว่าแอปนี้ต้องต่อเน็ต</strong> เพื่อให้ AI ใส่ข้อความแจ้งเตือนที่เหมาะสมถ้าโหลด CDN
+            ไม่สำเร็จ แทนที่จะปล่อยหน้าจอขาว</li>
+          <li>เขียนเป็นภาษาอังกฤษเพราะประหยัด token กว่าและ AI ทำตามได้แม่นกว่า แต่สั่งให้หน้าเว็บที่ออกมาเป็นภาษาไทย
+          </li>
+        </ul>
+      </div>
+      <div class="prompt-body">
+        <pre id="p1">Build me a Chinese character writing-practice web app as ONE self-contained HTML file.
+I am a Chinese language teacher. I cannot write or read code.
+This app needs an internet connection every time it is opened, because it uses a small
+open-source library with real, accurate stroke-order data — that is a deliberate trade-off
+in exchange for accuracy over building an approximate version myself.
+
+## OUTPUT REQUIREMENT
+A single .html file. I will open it in a browser. No install, no build step, but it DOES
+need internet access each time it runs (to load the library and character data below).
+
+## LIBRARY
+Include EXACTLY this one external script tag and nothing else external:
+&lt;script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3/dist/hanzi-writer.min.js"&gt;&lt;/script&gt;
+Do not use &lt;script type="module"&gt;. Do not add any other external library, font, or CDN.
+HanziWriter automatically fetches real stroke data for any Chinese character from its own
+public data source the first time that character is used — do not invent or embed stroke
+coordinates yourself, and do not build your own canvas drawing system; let the library
+handle rendering the character and its writing board.
+
+## CHARACTER DATA — starts EMPTY, on purpose
+Do NOT embed any starter characters. Start with:
+
+const characters = [];
+
+This app has no built-in vocabulary at all — every character must be added later (see the
+separate import feature that gets added in another prompt). Design the whole UI around the
+possibility that `characters` is empty, especially on first load.
+
+## WRITING BOARD
+For the selected character (when one exists), create (destroying any previous instance
+first) a writer inside a container div sized around 300x300px:
+
+const writer = HanziWriter.create('character-target', character, {
+  width: 300,
+  height: 300,
+  padding: 8,
+  showOutline: true,
+  strokeAnimationSpeed: 1,
+  delayBetweenStrokes: 300
+});
+
+Wrap the container in a card using the visual style below. You may add a light decorative
+grid behind it with plain CSS (a cross and two diagonals, like traditional Chinese
+calligraphy practice paper) purely for looks — this is optional and cosmetic only; the
+library handles all actual stroke rendering and checking on its own.
+
+## EMPTY STATE (this matters a lot, since the app starts with zero characters)
+- If `characters` is empty, do NOT try to create a writer or show the practice controls at
+  all. Instead show a friendly Thai message in the main area, something like "ยังไม่มีคำศัพท์
+  ในแอปนี้ กรุณาเพิ่มคำศัพท์ก่อนเริ่มฝึกเขียน" and nothing else broken or blank around it.
+- The character grid area, pronunciation button, stroke-order button, and quiz button must
+  all be hidden or disabled while there are zero characters — never call any HanziWriter
+  method with an undefined character.
+- As soon as characters exist (this will happen once an import feature is added in a later
+  prompt and the person actually imports something), the empty-state message disappears and
+  the first character is selected automatically.
+
+## CONTROLS (only relevant once at least one character exists)
+- A grid of small buttons, one per character in the data, each showing the character and
+  its pinyin. Tapping one selects it and recreates the writer for that character. The
+  currently selected character is visually highlighted.
+- An info card showing the selected character large, its pinyin, Thai meaning and one
+  example word.
+- "🔉 ออกเสียง" plays the pronunciation of the selected character using the browser's
+  built-in Web Speech API, nothing external:
+
+  function speak(hanzi) {
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(hanzi);
+    utterance.lang = 'zh-CN';
+    window.speechSynthesis.speak(utterance);
+  }
+
+  Do NOT use fetch() or any online TTS service for this — Web Speech API is built into
+  the browser already and needs no extra library or network request of its own.
+- "▶ เล่นลำดับสโตรก" calls writer.animateCharacter() to show the real stroke order.
+- "✏️ ฝึกเขียน" starts writer.quiz({ onCorrectStroke, onMistake, onComplete }):
+  - onCorrectStroke: give brief positive Thai feedback for that stroke.
+  - onMistake: show a brief Thai hint and let the student try that same stroke again;
+    never block or freeze.
+  - onComplete: show a Thai completion message (e.g. "เขียนครบแล้ว!").
+  This built-in quiz already validates stroke shape and order against real data — do not
+  build a separate custom scoring system on top of it.
+- Everything must work equally well on desktop and on a phone screen, with tap targets big
+  enough for a finger. On narrow screens the character grid may wrap to multiple lines.
+
+## VISUAL STYLE
+Warm paper-like background (approx #f5f1eb), white rounded cards (radius ~24–32px), soft
+shadows, a red accent for primary actions (approx #c31f2d) and a dark green for secondary
+actions (approx #173f35).
+
+## NEVER BREAK
+If the CDN script fails to load (e.g. no internet), detect this and show a clear Thai
+message explaining that this app needs an internet connection, instead of a blank white
+screen or a silent freeze. Anywhere else something can go wrong, show a short Thai message
+instead. I cannot debug code myself.
+
+Give me the complete single HTML file as ONE piece, ready to open.
+Never split it across two messages.</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ เช็คว่าผ่าน: เปิดแอปครั้งแรกเห็นข้อความ "ยังไม่มีคำศัพท์" ไม่ใช่หน้าจอพังหรือ error ·
+      ไม่มีปุ่มฝึกเขียน/ออกเสียง/ลำดับสโตรกโผล่มาทั้งที่ยังไม่มีตัวอักษร ·
+      โค้ดพร้อมรับตัวอักษรที่จะเพิ่มเข้ามาทีหลังโดยไม่ต้องแก้โครงสร้างเพิ่ม</div>
+
+    <hr>
+
+    <h2>Prompt 2: เพิ่มปุ่มนำเข้าคำศัพท์จาก JSON และ PDF</h2>
+
+    <div class="panel note">
+      <strong>อ่านก่อนสอน:</strong> Prompt 2 แก้ไฟล์ HTML ในแชทเดิมกับ Prompt 1 เพิ่มหน้าจอ "นำเข้าคำศัพท์"
+      ที่รับได้ทั้งไฟล์ <strong>.json</strong> (เช่นไฟล์ที่ได้จาก Prompt 3) และไฟล์ <strong>.pdf</strong> โดยตรง —
+      ถ้าเลือกไฟล์ PDF แอปจะดึงคำศัพท์เองในเบราว์เซอร์ (เร็ว สะดวก ไม่ต้องเปิด Gemini อีกแท็บ) แต่จะยังไม่มีหมวดหมู่
+      ให้ เพราะเบราว์เซอร์ล้วนๆ วิเคราะห์หัวข้อของคำศัพท์ทั้งชุดไม่ได้ดีเท่า AI ที่เห็นคำศัพท์ทั้งหมดพร้อมกัน — ถ้าอยาก
+      ได้หมวดหมู่ที่ดีกว่า ใช้ Prompt 3 แทน (แนบ PDF เดิมให้ Gemini วิเคราะห์แล้วนำเข้า JSON กลับมา)<br><br>
+      Prompt นี้ยังเพิ่ม<strong>แท็บหมวด</strong> (ครั้งแรกในแอป — Prompt 1 ไม่มี) ดึงจาก field <code>category</code>
+      ที่มากับข้อมูลที่นำเข้า
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 2</h3>
+        <button class="copy" data-target="p2">📋 คัดลอก Prompt 2</button>
+      </div>
+      <div class="explain">
+        <strong>prompt นี้ทำงานยังไง</strong>
+        <ul>
+          <li><strong>ไฟล์เดียว รับได้ 2 นามสกุล</strong>: ตรวจนามสกุลไฟล์ที่เลือกแล้วแยกเส้นทางประมวลผลเอง
+            ผู้ใช้ไม่ต้องเลือกโหมดเอง</li>
+          <li><strong>เพิ่มช่องวางข้อความ JSON ควบคู่กับการอัปโหลดไฟล์</strong>: ผู้เรียนหลายคนไม่คุ้นกับการ
+            "เซฟไฟล์แล้วอัปโหลด" การก๊อปข้อความจาก Gemini มาวางในกล่องข้อความบนเว็บตรงๆ เข้าใจง่ายกว่า
+            และตัดขั้นตอนเซฟไฟล์ก่อนออกไปได้เลย ใช้ตรรกะ parse/preview/merge ชุดเดียวกับไฟล์ JSON ไม่ต้องเขียนแยก</li>
+          <li><strong>เส้นทาง PDF ใช้ pdf.js ดึงข้อความ + <code>pinyin-pro</code> เติมพินอิน + endpoint
+              แปลภาษาฟรีเติมความหมายไทย</strong> เหมือนที่เคยออกแบบไว้ — ทำงานได้จริงในเบราว์เซอร์ล้วนๆ แต่
+            <strong>ถ้าแปลความหมายไม่สำเร็จ ตัดทิ้งเลย ไม่เอาเข้ามา</strong>
+            กันไม่ให้มีรายการค้างอยู่แบบไม่มีความหมายให้เห็นในแอป ส่วน<strong>หมวดหมู่ยังปล่อยว่างไว้ได้</strong>
+            เพราะเป็นขั้นตอนที่ตั้งใจเลื่อนไปทำทีหลังด้วยปุ่ม AI ไม่ใช่ความล้มเหลว
+          </li>
+          <li><strong>เส้นทาง JSON ตัดทิ้งรายการที่ไม่มีความหมายหรือไม่มีหมวดหมู่</strong>: ข้อมูลจากเส้นทางนี้ (Prompt
+            3) ควรจะครบทุกช่องอยู่แล้ว ถ้ามีรายการไหนขาดความหมายหรือหมวด แปลว่ามีอะไรผิดพลาดตั้งแต่ต้นทาง
+            จึงตัดทิ้งดีกว่าเอาเข้ามาแบบครึ่งๆ กลางๆ ที่ค้างอยู่ในแอปแบบไม่มีใครสังเกตเห็น</li>
+          <li><strong>เส้นทาง JSON parse ตรงๆ ไม่ต้องคำนวณอะไรเพิ่ม</strong>
+            เพราะสมมติว่าข้อมูลพินอิน/ความหมาย/หมวดมาครบแล้ว (เช่นจาก Prompt 3)</li>
+          <li><strong>เพิ่มแท็บหมวดในหน้านี้เป็นครั้งแรก</strong>: Prompt 1 เริ่มด้วย <code>characters = []</code>
+            ไม่มีหมวดตั้งแต่ต้น หมวดจะเกิดขึ้นก็ต่อเมื่อมีคำศัพท์ที่นำเข้ามาพร้อมหมวดจริง</li>
+          <li><strong>คำที่นำเข้ามา (ทุกเส้นทาง) ต้องแยกตัวอักษรประกอบไปฝึกเขียนทีละตัวด้วย</strong>: HanziWriter
+            ฝึกได้ทีละ 1 ตัวอักษรเท่านั้น</li>
+          <li><strong>สั่งให้ merge ด้วยตัวอักษรจีน/คำเป็น key</strong> กันไม่ให้นำเข้าซ้ำ
+            และอัปเดตข้อมูลของตัวที่มีอยู่แล้วได้ (ใช้ตอนนำเข้า JSON ฉบับแก้ไขทีหลังจาก Prompt 3)</li>
+        </ul>
+      </div>
+      <div class="prompt-body">
+        <pre id="p2">The writing board works. Now add a way to bulk-add vocabulary by importing a file,
+instead of typing one character at a time — and add category tabs for the first time,
+since categories only become useful once there is enough imported vocabulary to group.
+Update the existing file, keeping everything that already works.
+Give me back the COMPLETE updated HTML file as ONE piece, not a diff or an excerpt.
+Never split the file across two messages. If it will not fit in one chat message, put it
+in a canvas or an attached file instead.
+
+Add a "นำเข้าคำศัพท์" screen with TWO ways to bring in JSON data, plus a file input for PDF:
+  1. A file input that accepts BOTH .json and .pdf — detect which one was selected by its
+     extension and branch automatically, the person should not have to pick a mode.
+  2. ALSO add a big &lt;textarea&gt; with a placeholder like "วางข้อความ JSON ที่ได้จาก Gemini
+     ตรงนี้..." and a "นำเข้าจากข้อความที่วาง" button next to it. This lets the teacher copy
+     JSON straight from a Gemini chat reply and paste it directly, without needing to save
+     it as a .json file first — one less step for someone who is not comfortable with file
+     management. Trim whitespace and parse the pasted text with the EXACT SAME JSON-parsing
+     and preview/merge logic as the .json file path below (do not write separate logic for
+     this — call the same function). If the pasted text is not valid JSON, show a short Thai
+     error under the textarea without clearing what was typed, so the teacher can fix it.
+
+## IF THE FILE IS .json (or text was pasted into the textarea)
+- Read the file with FileReader.readAsText, never fetch() — or use the pasted text directly.
+  Parse it as a JSON array. Each entry is EITHER a character shape (char, pinyin, meaning,
+  example, category) OR a word shape (word, pinyin, meaning, category) — detect which by
+  whether it has a `char` or `word` key.
+- DISCARD any entry whose `meaning` OR `category` is missing, empty, or just whitespace —
+  do not add or update anything from an entry like this. This data is expected to already
+  be complete (from Gemini in Prompt 3), so an incomplete entry usually means something
+  went wrong upstream; it is better to leave that word out of the library entirely than to
+  add it half-finished and have it silently sit there with a blank meaning or no category
+  forever.
+- Show a preview before I confirm: how many valid, COMPLETE character entries and how many
+  valid, complete word entries were found; how many entries were discarded for missing
+  meaning/category; and how many entries could not be read at all as valid JSON.
+- On confirm, merge by the Chinese char/word as key (using only the complete entries): if
+  it already exists, UPDATE its pinyin/meaning/example/category with the imported values —
+  tell me how many were added versus updated. Never create duplicates.
+- If the content is not valid JSON, not an array, or every entry is invalid/incomplete,
+  show a short Thai error and import nothing.
+- If the content is not valid JSON, matches neither shape above, or every entry is
+  invalid/incomplete, show a short Thai error and import nothing.
+
+## IF THE FILE IS .pdf
+- Use pdf.js to read it: include this external script (in addition to hanzi-writer):
+  &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"&gt;&lt;/script&gt;
+  Set pdfjsLib.GlobalWorkerOptions.workerSrc to the matching worker file from the same CDN
+  and version. Read the file as an ArrayBuffer with FileReader (never fetch()), load it with
+  pdfjsLib.getDocument, and extract the text of every page with page.getTextContent().
+- From the combined extracted text, find every contiguous run of Chinese characters using a
+  regex matching CJK Unicode ideographs ([\u4e00-\u9fff]+), and collect the UNIQUE runs
+  found, in the order they first appear. A run of length 1 is a single CHARACTER, length 2
+  or more is a WORD.
+- Also include this script, to auto-fill pinyin (nothing else external besides these two):
+  &lt;script src="https://unpkg.com/pinyin-pro/dist/index.js"&gt;&lt;/script&gt;
+  Use its pinyin() function to generate the pinyin reading for every extracted run.
+- Also auto-fill a Thai meaning for every extracted run using this free public translation
+  endpoint (no API key, no extra library — just fetch()):
+
+  async function translateToThai(text) {
+    try {
+      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN'
+        + '&tl=th&dt=t&q=' + encodeURIComponent(text);
+      const res = await fetch(url);
+      const data = await res.json();
+      return data[0].map(part => part[0]).join('');
+    } catch (e) {
+      return ''; // signal failure — this run gets discarded below, never left blank
+    }
+  }
+
+  This is an UNOFFICIAL endpoint, may be imprecise or stop working.
+- If translateToThai() returns an empty result for a run (the endpoint failed or gave
+  nothing usable), DISCARD that character or word from this import entirely — do not add it
+  with a blank meaning. Keep a count of how many runs were discarded this way, so I know
+  how many I might want to add later by hand or through Prompt 3 instead.
+- Leave `category` as an EMPTY STRING for every run that DOES make it through (this is not
+  a failure — a single item cannot be categorized sensibly without seeing the whole list's
+  topic first, and this path never sees the whole list at once). Do NOT discard an item
+  just because its category is empty at this stage; the teacher can fix categories later
+  by re-running Prompt 3 on the same PDF (which sees the whole file and categorizes
+  properly) and importing the resulting JSON, or by editing categories by hand with "✏️".
+- Show a preview list of every run that has a meaning (characters and words together,
+  labelled which type each is), with pinyin and translated meaning shown, each with its own
+  checkbox (checked by default). Let me uncheck anything before confirming. Also show the
+  count of runs discarded for having no translated meaning.
+
+## ON CONFIRM (either path)
+- Add each checked, not-already-present, COMPLETE CHARACTER to the character list.
+- Add each checked, not-already-present, COMPLETE WORD to a separate `words` array, and
+  also add each of its individual characters to the character list if not already present
+  (with blank category, since that is expected at this stage — but skip adding a character
+  from a word if that character itself has no way to get a meaning either).
+
+## CATEGORY TABS (new in this prompt)
+- Add a row of category tabs above the character grid, one tab per UNIQUE non-empty
+  `category` value currently in the data, PLUS one "ไม่มีหมวด" tab for characters whose
+  category is empty. Tapping a tab filters the grid to show only that group. Do not invent
+  category names — only ones already present in the data (or "ไม่มีหมวด" for blank ones).
+
+## AFTER IMPORT (either file type, or after re-importing a JSON with better categories)
+- Every imported/updated character appears immediately in the character grid, under its
+  category tab (or "ไม่มีหมวด"), and can be selected right away without reloading.
+- Add a "รายการคำศัพท์" screen listing every word with its pinyin and meaning; tapping a
+  word's characters jumps to practicing that character.
+- Add a small "✏️" edit button on each character card AND each word row to fix any field,
+  saved immediately to localStorage.
+
+## RULES THAT STILL APPLY
+Single self-contained HTML file. Only hanzi-writer, pdf.js, and pinyin-pro loaded from CDN,
+plus fetch() only to the HanziWriter data source and the one translation endpoint above —
+no other external libraries or endpoints, and never call any AI API directly from this
+file. No &lt;script type="module"&gt;, no import or export in my own code. No fetch() of
+local files. All visible text in Thai. Never a blank white screen. If pdf.js, pinyin-pro,
+or the translation endpoint fail, degrade gracefully.
+
+Give me the updated file.</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ เช็คว่าผ่าน: นำเข้าไฟล์ .json ที่มีบางรายการขาดความหมาย/หมวด
+      แล้วรายการเหล่านั้นถูกตัดทิ้งพร้อมบอกจำนวนที่ตัดทิ้ง · วางข้อความ JSON ในกล่องข้อความแล้วกดนำเข้า ได้ผลเหมือนไฟล์
+      · นำเข้าไฟล์ .pdf แล้วรายการที่แปลความหมายไม่สำเร็จถูกตัดทิ้งไปเลย (ไม่ใช่เข้ามาแบบว่างเปล่า)
+      แต่หมวดยังปล่อยว่างได้ตามปกติ · มีแท็บหมวดขึ้น (รวม "ไม่มีหมวด") · ตัวอักษรในคำที่นำเข้าไปอยู่ในรายการฝึกเขียนด้วย
+      · นำเข้าไฟล์เดิมซ้ำแล้วไม่เกิดรายการซ้ำ</div>
+
+    <hr>
+
+    <h2>Prompt 3: แนบไฟล์ PDF ให้ Gemini วิเคราะห์และแยกหมวดหมู่เป็น JSON</h2>
+
+    <div class="panel note">
+      <strong>อ่านก่อนสอน:</strong> Prompt 3 ไม่ใช่คำสั่งแก้ไฟล์ HTML และไม่ต้องอยู่ในแชทเดียวกับ Prompt 1/2 —
+      เป็นขั้นตอนแยกที่ทำในแชทกับ Gemini โดยตรง: แนบไฟล์ PDF คำศัพท์เข้ากับ Gemini (เปิดแชทใหม่ก็ได้) แล้วให้
+      Gemini อ่านทั้งไฟล์และแยกคำศัพท์ออกมาเป็น JSON ให้เสร็จสรรพ รวมถึงจัดหมวดหมู่ตามหัวข้อจริงมาให้เลย — ได้
+      ผลลัพธ์ที่ดีกว่าเส้นทาง PDF ของ Prompt 2 เพราะ Gemini เห็นคำศัพท์ทั้งชุดพร้อมกันตั้งแต่ต้น แล้วนำ JSON
+      ที่ได้ไปนำเข้าผ่าน Prompt 2 (เส้นทาง .json) อีกที<br><br>
+      <strong>ทำไมต้องมีทางนี้ด้วย:</strong> เส้นทาง PDF ในแอป (pdf.js + regex) ดึงได้แค่ "ตัวหนังสือดิบ" ไม่เข้าใจ
+      โครงสร้างหรือบริบท ส่วน Gemini อ่านไฟล์ PDF จริงๆ ได้ทั้งหน้า เห็นตาราง หัวข้อ และบริบทของคำศัพท์ทั้งชุด
+      จึงจัดหมวดหมู่ตามหัวข้อได้แม่นยำกว่ามากตั้งแต่ขั้นแรก
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt 3</h3>
+        <button class="copy" data-target="p3">📋 คัดลอก Prompt 3</button>
+      </div>
+      <div class="explain">
+        <strong>prompt นี้ทำงานยังไง</strong>
+        <ul>
+          <li><strong>แนบไฟล์ PDF ไปพร้อม prompt โดยตรง</strong> เพราะ Gemini อ่านไฟล์ PDF ได้ทั้งหน้า (multimodal)
+            ไม่ใช่แค่ดึงตัวหนังสือดิบแบบสุ่มๆ</li>
+          <li><strong>สั่งให้แยกทั้งตัวอักษรเดี่ยวและคำ</strong> ให้เข้ากับ schema เดียวกับที่ Prompt 2 ใช้</li>
+          <li><strong>บังคับให้จัดหมวดตามหัวข้อความหมาย ไม่ใช่ตามส่วนประกอบตัวอักษร</strong>:
+            คำศัพท์จากไฟล์จริงมักเป็นหัวข้อบทเรียน (การเดินทาง, อาหาร, ครอบครัว ฯลฯ) ไม่ใช่ตระกูลอักษร</li>
+          <li><strong>กำหนดกรอบจำนวนหมวด (3–8 หมวด) และห้ามสร้างหมวดแยกทีละคำ</strong>:
+            กันไม่ให้ได้หมวดเยอะเกินจำเป็นจนแท็บหมวดในแอปรกไม่มีประโยชน์</li>
+          <li><strong>ขอให้ Gemini ส่งเป็นไฟล์ดาวน์โหลดถ้าทำได้ ไม่ใช่แค่ข้อความ</strong>: บาง Gemini interface มีปุ่ม
+            Canvas/ดาวน์โหลด แต่ไม่ใช่ทุกบัญชี/ทุกเวอร์ชันจะมี จึงมีทางสำรองให้ตอบเป็นข้อความ JSON ธรรมดา</li>
+        </ul>
+      </div>
+      <div class="prompt-body">
+        <pre id="p3">ฉันมีไฟล์ PDF คำศัพท์ภาษาจีน (แนบไฟล์มาให้แล้ว)
+โปรดอ่านทั้งไฟล์แล้วแยกคำศัพท์ภาษาจีนออกมา ทั้งตัวอักษรเดี่ยวและคำหลายพยางค์
+
+สำหรับแต่ละรายการ ให้:
+- พินอิน
+- ความหมายภาษาไทยที่เป็นธรรมชาติ (ไม่ใช่แปลตรงตัวแบบเครื่อง)
+- ตัวอย่างคำ (สำหรับตัวอักษรเดี่ยวเท่านั้น)
+
+จากนั้นมองรายการทั้งหมดเป็นภาพรวม แล้วจัดกลุ่มเป็นหมวดหมู่ตามหัวข้อความหมายของคำศัพท์ในไฟล์นี้จริงๆ
+(เช่น ถ้าไฟล์เป็นคำศัพท์เรื่องการเดินทาง หมวดควรเป็นอะไรทำนอง "การเดินทาง", "ที่พัก", "การขนส่ง" ไม่ใช่จัด
+ตามส่วนประกอบตัวอักษร) ให้จำนวนหมวดน้อยที่สุดเท่าที่ยังสื่อความหมายได้ชัดเจน โดยทั่วไปควรมีประมาณ 3–8
+หมวดต่อทั้งไฟล์ ห้ามสร้างหมวดใหม่แยกทีละคำหรือทีละตัวอักษร
+
+กฎเหล็ก:
+- ห้ามมีข้อความอธิบายใดๆ ทั้งสิ้น
+- ตอบกลับเป็น JSON array เท่านั้น
+- ใช้ schema {char, pinyin, meaning, example, category} สำหรับตัวอักษรเดี่ยว
+  และ {word, pinyin, meaning, category} สำหรับคำ (ไม่มี example)
+- ดึงคำศัพท์มาให้ครบทุกรายการเท่าที่ทำได้จากทั้งไฟล์
+
+ถ้าเครื่องมือของคุณรองรับการสร้างไฟล์ให้ดาวน์โหลด (เช่น Canvas) ให้สร้างเป็นไฟล์ชื่อ vocabulary.json
+ที่มีแต่ JSON array ล้วนๆ ข้างในให้ดาวน์โหลดได้เลย
+ถ้าทำไฟล์ไม่ได้ ให้ตอบกลับเป็น JSON array ในข้อความแชทตามปกติแทน อย่าปล่อยให้ค้างเพราะพยายามสร้างไฟล์
+ไม่สำเร็จ
+
+ตัวอย่างรูปแบบที่ต้องการ:
+[
+  { "char": "你", "pinyin": "nǐ", "meaning": "คุณ / เธอ", "example": "你好", "category": "หมวดทักทาย" },
+  { "word": "你好", "pinyin": "nǐ hǎo", "meaning": "สวัสดี", "category": "หมวดทักทาย" }
+]</pre>
+      </div>
+    </div>
+
+    <div class="check">✅ เช็คว่าผ่าน: ได้ JSON array กลับมาครอบคลุมคำศัพท์ส่วนใหญ่ในไฟล์ ·
+      หมวดที่ได้ตรงกับหัวข้อจริงของไฟล์ PDF นั้น (ไม่ใช่ตามส่วนประกอบตัวอักษร) · จำนวนหมวดพอเหมาะ (ประมาณ 3–8 หมวด)
+    </div>
+
+    <div class="panel warn">
+      <strong>วิธีเก็บผลลัพธ์เป็นไฟล์ .json:</strong><br>
+      <strong>1.</strong> ถ้า Gemini มีปุ่มดาวน์โหลดไฟล์ (Canvas) → กดปุ่มนั้น ได้ไฟล์ <code>.json</code> เลย จบ<br>
+      <strong>2.</strong> ถ้าไม่มีปุ่ม คัดลอกเฉพาะส่วน JSON (ตั้งแต่ <code>[</code> ถึง <code>]</code>) → เปิด Notepad
+      (Windows)
+      หรือ TextEdit แล้วเลือก Format → Make Plain Text ก่อน (Mac) → วางข้อความ → Save As → ตั้งชื่อ
+      <code>vocabulary.json</code> (Windows ต้องเลือก "Save as type: All Files" ด้วย)<br>
+      <strong>อย่าลืม:</strong> ต้องเป็น JSON ล้วนๆ ไม่มีข้อความอธิบายปนอยู่ก่อนหรือหลัง ไม่งั้น Prompt 2 จะ parse
+      ไฟล์ไม่ผ่าน<br><br>
+      เอาไฟล์ <code>vocabulary.json</code> นี้ไปนำเข้าผ่าน Prompt 2 (เส้นทาง .json) ได้เลย
+    </div>
+
+    <hr>
+
+
+
+
+  </div>
+
+  <script>
+    document.querySelectorAll('button.copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.getElementById(btn.dataset.target);
+        if (!el) return;
+        var text = el.textContent;
+        var done = function () {
+          var old = btn.textContent;
+          btn.textContent = '✓ คัดลอกแล้ว';
+          btn.classList.add('done');
+          setTimeout(function () {
+            btn.textContent = old;
+            btn.classList.remove('done');
+          }, 1600);
+        };
+        // navigator.clipboard needs a secure context; this page may be opened from
+        // file:// where it is unavailable, so fall back to a hidden textarea.
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+        } else {
+          fallback(text, done);
+        }
+      });
+    });
+    function fallback(text, done) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); }
+      catch (e) { alert('คัดลอกอัตโนมัติไม่ได้ กรุณาเลือกข้อความแล้วกด Ctrl+C / Cmd+C'); }
+      document.body.removeChild(ta);
+    }
+  </script>
+</body>
+
+</html>

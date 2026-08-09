@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Workshop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: "LINE Seed Sans TH";
+            src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf")format("truetype");
+            font-weight: 400;
+            font-display: swap
+        }
+
+        @font-face {
+            font-family: "LINE Seed Sans TH";
+            src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf")format("truetype");
+            font-weight: 700;
+            font-display: swap
+        }
+
+        @font-face {
+            font-family: "LINE Seed Sans TH";
+            src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_XBd.ttf")format("truetype");
+            font-weight: 800;
+            font-display: swap
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bar-h: 56px;
+            /* clickable tab zone */
+            --fade-h: 96px;
+            /* total gradient tail height */
+            --bar-h-mob: 62px;
+            /* mobile bottom bar height */
+            --accent: #a78bfa;
+            --accent2: #ff6bbb;
+            --text: rgba(255, 255, 255, 0.92);
+            --text-dim: rgba(255, 255, 255, 0.45);
+            --font: "LINE Seed Sans TH", -apple-system, sans-serif;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            background: #08080f;
+            font-family: var(--font);
+            color: var(--text);
+        }
+
+        /* ── Background orbs ──────────────────────────────────── */
+        .scene {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: .5;
+            animation: drift linear infinite alternate
+        }
+
+        .o1 {
+            width: 640px;
+            height: 640px;
+            top: -18%;
+            left: -12%;
+            background: radial-gradient(circle, #3d28a0, transparent 65%);
+            animation-duration: 22s
+        }
+
+        .o2 {
+            width: 520px;
+            height: 520px;
+            bottom: -12%;
+            right: -10%;
+            background: radial-gradient(circle, #8c2060, transparent 65%);
+            animation-duration: 28s
+        }
+
+        .o3 {
+            width: 400px;
+            height: 400px;
+            top: 38%;
+            left: 44%;
+            background: radial-gradient(circle, #0d5c4a, transparent 65%);
+            animation-duration: 18s
+        }
+
+        @keyframes drift {
+            from {
+                transform: translate(0, 0)
+            }
+
+            to {
+                transform: translate(7%, 9%)
+            }
+        }
+
+        /* ── iframe — starts below the tab zone, never hidden ─── */
+        #contentFrame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1;
+            transition: opacity .3s;
+        }
+
+        /* ── Gradient veil: pure CSS fade, no blur, no hard cut ─── */
+        .fade-veil {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 110px;
+            /* tall fade zone */
+            z-index: 98;
+            pointer-events: none;
+            /* clicks pass right through */
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 1.00) 0%,
+                    rgba(255, 255, 255, 0.95) 20%,
+                    rgba(255, 255, 255, 0.70) 50%,
+                    rgba(255, 255, 255, 0.20) 80%,
+                    rgba(255, 255, 255, 0.00) 100%);
+        }
+
+        /* ── Topbar: small glass pill for the tabs ────────────── */
+        .topbar {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            /* small glass pill — floats inside the fade zone */
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            border: 1px solid rgba(0, 0, 0, 0.07);
+            border-radius: 18px;
+            padding: 6px 10px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+        }
+
+        /* re-enable clicks on tabs */
+        .topbar .tabs {
+            pointer-events: all;
+        }
+
+        /* tabs container */
+        .tabs {
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: .88rem;
+            font-weight: 600;
+            color: rgba(0, 0, 0, 0.45);
+            background: transparent;
+            transition: all .2s ease;
+            white-space: nowrap;
+        }
+
+        .tab i {
+            font-size: .82rem;
+            flex-shrink: 0;
+            transition: color .2s
+        }
+
+        .tab:hover {
+            color: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .tab.active {
+            color: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab.active i {
+            color: var(--accent)
+        }
+
+        /* ── Loader ───────────────────────────────────────────── */
+        .loader {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            /* frosted glass — same feel as the topbar */
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            transition: opacity .35s, visibility .35s;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none
+        }
+
+        .spin {
+            width: 36px;
+            height: 36px;
+            border: 2.5px solid rgba(167, 139, 250, .25);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .75s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .loader-txt {
+            color: rgba(0, 0, 0, 0.4);
+            font-size: .85rem;
+            font-family: var(--font);
+            font-weight: 600;
+        }
+
+
+
+        /* ── Mobile override: Move layout to bottom ───────────── */
+        @media (max-width: 768px) {
+            .topbar {
+                top: auto;
+                bottom: max(24px, env(safe-area-inset-bottom, 24px));
+            }
+
+            .fade-veil {
+                top: auto;
+                bottom: 0;
+                background: linear-gradient(to top,
+                        rgba(255, 255, 255, 1.00) 0%,
+                        rgba(255, 255, 255, 0.95) 20%,
+                        rgba(255, 255, 255, 0.70) 50%,
+                        rgba(255, 255, 255, 0.20) 80%,
+                        rgba(255, 255, 255, 0.00) 100%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background -->
+    <div class="scene">
+        <div class="orb o1"></div>
+        <div class="orb o2"></div>
+        <div class="orb o3"></div>
+    </div>
+
+    <!-- Full-viewport iframe -->
+    <iframe id="contentFrame" src="workshop/workshop_hsk_prompt_v8.html" title="Workshop"></iframe>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="spin"></div>
+        <div class="loader-txt">กำลังโหลด...</div>
+    </div>
+
+    <!-- Smooth gradient fade veil (pointer-events:none, clicks pass through) -->
+    <div class="fade-veil"></div>
+
+    <!-- ══ Top glass bar (Used on all devices now) ═════════════ -->
+    <header class="topbar">
+        <div class="tabs" id="tabList">
+            <button class="tab active" data-src="workshop/workshop_hsk_prompt_v8.html">
+                <i class="fa-solid fa-pen-to-square"></i> Workshop 1
+            </button>
+            <button class="tab" data-src="workshop/workshop-2.html">
+                <i class="fa-solid fa-book-open"></i> Workshop 2
+            </button>
+            <button class="tab" data-src="workshop/workshop_write.html">
+                <i class="fa-solid fa-pencil"></i> Workshop 3
+            </button>
+        </div>
+    </header>
+
+    <script>
+        const iframe = document.getElementById('contentFrame');
+        const loader = document.getElementById('loader');
+
+        // Collect all nav buttons
+        const allBtns = document.querySelectorAll('.tab');
+
+        iframe.addEventListener('load', () => {
+            loader.classList.add('hidden');
+            iframe.style.opacity = '1';
+        });
+
+        function navigate(src) {
+            loader.classList.remove('hidden');
+            iframe.style.opacity = '0.1';
+            setTimeout(() => { iframe.src = src; }, 200);
+        }
+
+        allBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const src = btn.dataset.src;
+
+                // Already active? skip
+                const currentSrc = iframe.src.split('/').slice(-2).join('/');
+                const newSrc = src.split('/').slice(-2).join('/');
+                if (currentSrc === newSrc) return;
+
+                // Sync both bars to same active state
+                allBtns.forEach(b => {
+                    if (b.dataset.src === src) {
+                        b.classList.add('active');
+                    } else {
+                        b.classList.remove('active');
+                    }
+                });
+
+                navigate(src);
+            });
+        });
+    </script>
+</body>
+
+</html>
