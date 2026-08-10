@@ -414,14 +414,14 @@
         เป็นจำนวนข้อสอบที่ต้องการ
       </div>
       <div class="prompt-body">
-        <pre id="p1">ฉันมีไฟล์คำศัพท์ภาษาจีน (แนบไฟล์มาให้แล้ว)
-จงสวมบทบาทเป็นอาจารย์สอนภาษาจีนระดับมืออาชีพ ช่วยแต่งข้อสอบ HSK จำนวน [👉 ใส่จำนวนข้อ 👈] ข้อต่อ 1 หมวด 
-โดยแบ่งข้อสอบออกเป็น 3 หมวด ได้แก่:
-1. listening (การฟัง) - เป็นปรนัย 4 ตัวเลือก มีประโยคให้ฟัง (audio) และคำถาม (question)
-2. reading (การอ่าน) - เป็นปรนัย 4 ตัวเลือก เติมคำในช่องว่าง
-3. writing (การเขียน) - เป็นอัตนัย ให้คำแปลมาแล้วให้ผู้สอบพิมพ์อักษรจีนตอบ
+        <pre id="p1">I have attached a Chinese vocabulary file.
+Act as a professional Chinese language teacher and create an HSK mock exam with [👉 ใส่จำนวนข้อ 👈] questions per section.
+Divide the exam into 3 sections:
+1. listening - Multiple choice (4 options) with an audio sentence and a question.
+2. reading - Multiple choice (4 options) fill-in-the-blank questions.
+3. writing - Subjective. Provide the Thai translation and require the user to type the correct Chinese characters.
 
-โปรดจัดเรียงผลลัพธ์ในรูปแบบ "JSON" โดยใช้โครงสร้างเป๊ะๆ ตามนี้:
+Please format the output strictly as a "JSON" object using this exact structure:
 
 {
   "listening": [
@@ -435,7 +435,7 @@
   ]
 }
 
-กฎเหล็ก: ตอบกลับมาเป็น Code Block ของ JSON เพียงกล่องเดียว ห้ามมีคำอธิบายใดๆ ทั้งสิ้น</pre>
+Strict rule: Output ONLY a single JSON code block. Do not include any other explanations.</pre>
       </div>
     </div>
 
@@ -459,28 +459,28 @@
         <strong>คำแนะนำ:</strong> ลบข้อความ <code>[👉 วางข้อมูล...]</code> ออก แล้ววาง JSON จาก Step 1 ลงไปแทน
       </div>
       <div class="prompt-body">
-        <pre id="p2">ช่วยสร้าง Web App แบบทดสอบ HSK ให้ฉัน โดยเขียนจบในไฟล์ HTML ไฟล์เดียว
-ไม่ต้องแยกไฟล์ ฉันจะเปิดเล่นในเบราว์เซอร์โดยตรง
+        <pre id="p2">Please build an HSK mock exam Web App for me. Write everything in a single HTML file.
+Do not separate the files; I will open it directly in my browser.
 
-## ข้อมูลข้อสอบ (DATA)
-นำข้อมูล JSON นี้ ฝังในตัวแปร JavaScript ชื่อ `EXAM_DATA`
+## Exam Data (DATA)
+Embed this JSON data into a JavaScript variable named `EXAM_DATA`:
 
 [👉 วางข้อมูล JSON ที่ก๊อปปี้มาจาก Step 1 ตรงนี้ 👈]
 
-## ดีไซน์เว็บ (ใช้ Tailwind CSS ผ่าน CDN)
-- **สำคัญเรื่องฟอนต์:** ให้ดึง Google Fonts ชื่อ "K2D" มาใช้เป็นฟอนต์หลักของหน้าเว็บ เพื่อให้แสดงผลภาษาไทยได้สวยงามทั้งบน Mac และ Windows
-- ใช้พื้นหลังสีครีมอ่อน (#fdf8f5) ข้อความหลักสีเทาเข้ม
-- ปุ่มหลักใช้สีส้ม (#d35400) และดีไซน์การ์ดมุมโค้ง (rounded-2xl) พร้อมเงาดูทันสมัย
+## Web Design (Use Tailwind CSS via CDN)
+- **Important Font Setup:** Import the Google Font "K2D" as the main font to display Thai beautifully on Mac and Windows.
+- Use a light cream background (#fdf8f5) and dark gray for main text.
+- Primary buttons should be orange (#d35400) with modern rounded-2xl cards and shadows.
 
-## ฟีเจอร์เวอร์ชัน 1: โครงสร้างและแท็บ
-1. **หน้าจอเริ่มสอบ:** มีชื่อเว็บ มีกล่องให้ "กรอกชื่อผู้สอบ" และปุ่มเริ่มสอบ
-2. **หน้าทำข้อสอบ:** 
-   - มีแท็บ (Tabs) ด้านบน 3 อัน: "🎧 การฟัง", "📖 การอ่าน", "✍️ การเขียน"
-   - เมื่อกดปุ่ม "ถัดไป" เรื่อยๆ ระบบจะเปลี่ยนจากหมวดฟัง ไปอ่าน ไปเขียน อัตโนมัติ
-   - หมวดฟัง/อ่าน: แสดงคำถาม และปุ่มตัวเลือก 4 ข้อ (คลิกเลือกได้)
-   - หมวดเขียน: แสดงคำถาม และมี "ช่อง Input (Text)" ให้พิมพ์ตอบ
+## Version 1 Features: Structure and Tabs
+1. **Start Screen (หน้าจอเริ่มสอบ):** Display the app name, an input field for "กรอกชื่อผู้สอบ" (enter name), and a start button.
+2. **Exam Screen (หน้าทำข้อสอบ):** 
+   - Have 3 tabs at the top: "🎧 การฟัง" (Listening), "📖 การอ่าน" (Reading), "✍️ การเขียน" (Writing).
+   - Clicking "ถัดไป" (Next) repeatedly should automatically switch from Listening to Reading to Writing sections.
+   - Listening/Reading sections: Display the question and 4 clickable choice buttons.
+   - Writing section: Display the question with a text input field for the answer.
 
-กฎ: ห้ามใช้ &lt;script type="module"&gt; และ ห้าม fetch ข้อมูลจากภายนอก ส่งโค้ดมาเป็นก้อนเดียว</pre>
+Rule: Do NOT use &lt;script type="module"&gt; and do NOT fetch external data. Output the code as a single block.</pre>
       </div>
     </div>
 
@@ -523,17 +523,17 @@
           (Palette)"</strong> เพื่อให้ผู้สอบกดดูว่าข้อไหนทำแล้วหรือยังไม่ได้ทำ
       </div>
       <div class="prompt-body">
-        <pre id="p3">ยอดเยี่ยมมาก! ตอนนี้ฉันต้องการเพิ่มฟังก์ชันการโต้ตอบ (Interactive) เข้าไปในโค้ดเดิม
-โปรดอัปเกรดโค้ดแล้วส่งโค้ด HTML เวอร์ชันใหม่มาให้เต็มๆ ไฟล์
+        <pre id="p3">Excellent! Now I want to add more interactive functions to the existing code.
+Please upgrade the code and output the full updated HTML file.
 
-ฟีเจอร์ที่ต้องเพิ่ม:
-1. **ระบบอ่านออกเสียง (Text-to-Speech):** ในข้อสอบหมวด "การฟัง" ให้เพิ่มปุ่ม "▶ ฟังเสียง" ไว้เหนือคำถาม เมื่อกดปุ่ม ให้ระบบใช้ `window.speechSynthesis` อ่านข้อความภาษาจีนที่อยู่ในช่อง `audio` ของ JSON ออกมา (ให้ตั้งค่าเสียงเป็นภาษาจีน 'zh-CN')
-2. **แผงข้อสอบ (Question Palette):** สร้างปุ่มเล็กๆ ด้านล่างจอที่กดแล้วจะมี Pop-up แสดงปุ่มหมายเลขข้อสอบทั้งหมด (กริดตาราง)
-   - ข้อไหนที่เลือกคำตอบ/พิมพ์ตอบแล้ว ปุ่มหมายเลขนั้นให้เปลี่ยนเป็น "สีส้มทึบ"
-   - ข้อไหนยังไม่ได้ตอบ เป็นขอบสีเทา
-   - สามารถคลิกที่หมายเลขข้อเพื่อกระโดดไปทำข้อนั้นได้ทันที
+Features to add:
+1. **Text-to-Speech:** In the "การฟัง" (Listening) section, add a "▶ ฟังเสียง" (Play Audio) button above the question. When clicked, use `window.speechSynthesis` to read out the Chinese text from the `audio` field in the JSON. Set the voice language to Chinese ('zh-CN').
+2. **Question Palette (แผงข้อสอบ):** Create a small button at the bottom of the screen that opens a pop-up grid of all question numbers.
+   - Questions that have been answered should turn solid orange.
+   - Unanswered questions should have a gray border.
+   - Clicking a question number should immediately jump to that question.
 
-กฎยังเหมือนเดิม: รวมทุกอย่างในไฟล์เดียว ห้ามตัดแบ่งโค้ดเด็ดขาด</pre>
+Same rule: Combine everything in a single HTML file. Do NOT cut or split the code block.</pre>
       </div>
     </div>
 
@@ -566,19 +566,19 @@
         <span class="highlight-text">🔥 ภารกิจ:</span> เปลี่ยนตัวเลขเวลาใน Prompt ก่อนกดส่ง!
       </div>
       <div class="prompt-body">
-        <pre id="p4">เยี่ยมมาก! สเตปสุดท้าย เราจะทำระบบตรวจข้อสอบ
-โปรดอัปเกรดโค้ดเดิม และส่งโค้ด HTML สมบูรณ์แบบ (Final Version) มาให้ฉัน
+        <pre id="p4">Great! For the final step, let's implement the grading system.
+Please upgrade the code and output the final, complete HTML version.
 
-ฟีเจอร์ที่ต้องเพิ่ม:
-1. **แถบจับเวลา:** มุมบนจอให้แสดงเวลาถอยหลังรวม [👉 ใส่เวลาสอบ เช่น 15 👈] นาที (เวลาเดินตลอดไม่ว่าจะอยู่แท็บไหน) เมื่อเวลาหมดให้บังคับส่งข้อสอบทันที
-2. **หน้าจอผลสอบ (Result Screen):** เมื่อกดปุ่ม "ส่งข้อสอบ" (ในข้อสุดท้ายของหมวดเขียน) ให้ตัดเข้าหน้าสรุปผล
-3. **รายละเอียดในหน้าผลสอบ:**
-   - แสดงคะแนนรวม ตัวใหญ่ๆ (เช่น ได้ 10/15)
-   - มีกล่องแยก 3 กล่อง แจ้งว่า: การฟังได้กี่คะแนน, การอ่านได้กี่คะแนน, การเขียนได้กี่คะแนน
-   - แสดงรายการเฉลยทุกข้อ บอกว่าข้อนี้ตอบถูกหรือผิด และแสดงคำอธิบาย (จากช่อง expl ใน JSON)
-   - มีปุ่ม "กลับสู่หน้าแรก" เพื่อสอบใหม่
+Features to add:
+1. **Countdown Timer (แถบจับเวลา):** At the top corner, display a total countdown timer of [👉 ใส่เวลาสอบ เช่น 15 👈] minutes. It must keep running regardless of which tab is active. When the time is up, force submit the exam immediately.
+2. **Result Screen (หน้าจอผลสอบ):** When clicking the "ส่งข้อสอบ" (Submit) button (on the last question of the writing section), transition to the summary screen.
+3. **Result Details:**
+   - Display the total score prominently (e.g., 10/15).
+   - Display 3 separate boxes showing the score for Listening, Reading, and Writing.
+   - Show a detailed answer key for all questions, indicating if the answer was correct or wrong, and include the explanation from the `expl` field in the JSON.
+   - Include a "กลับสู่หน้าแรก" (Return to Home) button to retake the exam.
 
-เขียนให้ครบจบในไฟล์เดียว ห้ามตัดโค้ดกลางคัน</pre>
+Output everything in a single HTML file without cutting off the code.</pre>
       </div>
     </div>
 
