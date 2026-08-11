@@ -758,17 +758,6 @@ Output everything in a single HTML file without cutting off the code.</pre>
           text = text.replace('__LISTENING__', L).replace('__READING__', R).replace('__WRITING__', W);
         }
 
-        // Prompt 2: inject JSON from textarea
-        if (targetId === 'p2') {
-          var jsonArea = document.getElementById('json_paste_area');
-          var jsonVal = jsonArea ? jsonArea.value.trim() : '';
-          if (!jsonVal) {
-            alert('⚠️ กรุณาวาง JSON จาก Step 1 ลงในช่องก่อนกดคัดลอก');
-            jsonArea && jsonArea.focus();
-            return;
-          }
-          text = text.replace('__JSON_DATA__', jsonVal);
-        }
 
         var done = function () {
           var old = btn.textContent;
