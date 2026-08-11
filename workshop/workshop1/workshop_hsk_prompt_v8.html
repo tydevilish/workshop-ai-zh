@@ -67,18 +67,31 @@
     }
 
     @media (max-width: 768px) {
-      .wrap { padding-top: 32px; padding-bottom: 90px }
+      .wrap {
+        padding-top: 32px;
+        padding-bottom: 120px
+      }
     }
 
     /* Custom Scrollbar matching workshop background */
-    ::-webkit-scrollbar { width: 14px; height: 14px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar {
+      width: 14px;
+      height: 14px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
     ::-webkit-scrollbar-thumb {
       background: var(--line);
       border: 4px solid var(--bg);
       border-radius: 8px;
     }
-    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
 
     h1 {
       font-size: clamp(1.7rem, 4vw, 2.4rem);
@@ -342,16 +355,19 @@
       margin: 16px auto 8px;
       background: white;
     }
+
     .img-clickable:hover {
       transform: scale(1.02);
       box-shadow: 0 4px 12px var(--shadow);
     }
+
     .img-caption {
       text-align: center;
       font-size: 0.9rem;
       color: var(--muted);
       margin-bottom: 24px;
     }
+
     .lightbox {
       display: none;
       position: fixed;
@@ -365,15 +381,18 @@
       justify-content: center;
       padding: 20px;
     }
+
     .lightbox.active {
       display: flex;
     }
+
     .lightbox img {
       max-width: 100%;
       max-height: 100%;
       border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
+
     .lightbox-close {
       position: absolute;
       top: 20px;
@@ -392,19 +411,24 @@
       transition: all 0.2s ease;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
+
     .lightbox-close:hover {
       background: rgba(0, 0, 0, 0.9);
       border-color: rgba(255, 255, 255, 0.5);
       transform: scale(1.05);
     }
+
     .image-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
       margin-top: 20px;
     }
+
     @media (max-width: 768px) {
-      .image-grid { grid-template-columns: 1fr; }
+      .image-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -521,7 +545,8 @@ Strict rule: Output ONLY a single JSON code block. Do not include any other expl
 
     <div class="check">✅ สิ่งที่ต้องได้: กล่องโค้ด JSON ที่แบ่งเป็น 3 หมวดชัดเจน กดปุ่ม "Copy" เตรียมไว้เลย</div>
     <img src="picture/1.png" alt="JSON Data" class="img-clickable">
-    <div class="img-caption">ผลลัพธ์ที่ได้จาก AI จะเป็นกล่องโค้ด JSON ที่มีข้อมูลครบทั้ง 3 หมวด (ฟัง, อ่าน, เขียน) ให้กดคัดลอกเตรียมไว้เลย</div>
+    <div class="img-caption">ผลลัพธ์ที่ได้จาก AI จะเป็นกล่องโค้ด JSON ที่มีข้อมูลครบทั้ง 3 หมวด (ฟัง, อ่าน, เขียน)
+      ให้กดคัดลอกเตรียมไว้เลย</div>
 
     <hr>
 
@@ -535,7 +560,8 @@ Strict rule: Output ONLY a single JSON code block. Do not include any other expl
       <div class="explain">
         <strong>เป้าหมาย:</strong> สร้างบ้านให้ข้อสอบอยู่<br>
         เนื่องจากเป็นแชทเดียวกัน AI ยังจำ JSON จาก Step 1 ได้อยู่ แค่ก๊อป Prompt นี้ไปวางต่อจากข้อความเดิมได้เลย<br>
-        <span class="highlight-text">⭐ ข้อดี:</span> ไม่ต้องก๊อปหรือวาง JSON เองเลย! AI จะย้อนกลับไปดู JSON ที่สร้างไว้ก่อนหน้าเอง
+        <span class="highlight-text">⭐ ข้อดี:</span> ไม่ต้องก๊อปหรือวาง JSON เองเลย! AI จะย้อนกลับไปดู JSON
+        ที่สร้างไว้ก่อนหน้าเอง
       </div>
       <div class="prompt-body">
         <pre id="p2">Please build an HSK mock exam Web App for me. Write everything in a single HTML file.
@@ -665,7 +691,7 @@ Output everything in a single HTML file without cutting off the code.</pre>
 
     <img src="picture/4.1timer.png" alt="Timer" class="img-clickable" style="max-width: 60%;">
     <div class="img-caption">1. แถบจับเวลาถอยหลัง (Timer) ด้านบนจอ เมื่อหมดเวลาจะบังคับส่งข้อสอบอัตโนมัติ</div>
-    
+
     <div class="image-grid">
       <div>
         <img src="picture/4.2result.png" alt="Result Screen" class="img-clickable">
@@ -716,8 +742,8 @@ Output everything in a single HTML file without cutting off the code.</pre>
 
   <script>
     // Lightbox Logic
-    document.querySelectorAll('.img-clickable').forEach(function(img) {
-      img.addEventListener('click', function() {
+    document.querySelectorAll('.img-clickable').forEach(function (img) {
+      img.addEventListener('click', function () {
         document.getElementById('lightbox-img').src = this.src;
         document.getElementById('lightbox').classList.add('active');
         if (window.parent) {
@@ -726,14 +752,14 @@ Output everything in a single HTML file without cutting off the code.</pre>
       });
     });
 
-    document.getElementById('lightbox-close').addEventListener('click', function() {
+    document.getElementById('lightbox-close').addEventListener('click', function () {
       document.getElementById('lightbox').classList.remove('active');
       if (window.parent) {
         window.parent.postMessage({ type: 'lightbox', action: 'close' }, '*');
       }
     });
 
-    document.getElementById('lightbox').addEventListener('click', function(e) {
+    document.getElementById('lightbox').addEventListener('click', function (e) {
       if (e.target === this) {
         this.classList.remove('active');
         if (window.parent) {

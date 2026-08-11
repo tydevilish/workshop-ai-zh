@@ -272,6 +272,14 @@
                 bottom: max(24px, env(safe-area-inset-bottom, 24px));
             }
 
+            .tab-label {
+                display: none;
+            }
+
+            .tab {
+                padding: 10px 14px;
+            }
+
             .fade-veil {
                 top: auto;
                 bottom: 0;
@@ -311,13 +319,13 @@
     <header class="topbar">
         <div class="tabs" id="tabList">
             <button class="tab active" data-src="workshop/workshop1/workshop_hsk_prompt_v8.html">
-                <i class="fa-solid fa-pen-to-square"></i> Workshop 1
+                <i class="fa-solid fa-pen-to-square"></i><span class="tab-label"> Workshop 1</span>
             </button>
             <button class="tab" data-src="workshop/workshop-2.html">
-                <i class="fa-solid fa-book-open"></i> Workshop 2
+                <i class="fa-solid fa-book-open"></i><span class="tab-label"> Workshop 2</span>
             </button>
             <button class="tab" data-src="workshop/workshop_write.html">
-                <i class="fa-solid fa-pencil"></i> Workshop 3
+                <i class="fa-solid fa-pencil"></i><span class="tab-label"> Workshop 3</span>
             </button>
         </div>
     </header>
