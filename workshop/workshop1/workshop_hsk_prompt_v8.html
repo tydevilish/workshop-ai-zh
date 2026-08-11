@@ -264,6 +264,63 @@
       font-weight: bold;
     }
 
+    .q-count-box {
+      background: #f5f0e8;
+      border: 1.5px solid #d4c5b0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 14px 0;
+    }
+
+    .q-count-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #5a4a3a;
+      margin-bottom: 14px;
+    }
+
+    .q-count-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .q-count-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid #d4c5b0;
+      border-radius: 10px;
+      padding: 8px 14px;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .q-count-item label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #5a4a3a;
+      white-space: nowrap;
+    }
+
+    .q-count-item input[type="number"] {
+      width: 60px;
+      border: 1.5px solid #d4c5b0;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+      color: var(--action);
+      background: #fffdf9;
+    }
+
+    .q-count-item span {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
     .step-badge {
       background: var(--action);
       color: white;
@@ -410,13 +467,36 @@
         <strong>เป้าหมาย:</strong> เตรียมข้อมูลดิบ (Data)<br>
         ข้อสอบ HSK มี 3 พาร์ทหลัก เราจะสั่งให้ AI นำคำศัพท์มาแต่งข้อสอบทั้งแบบ <strong>ฟัง
           (ต้องมีข้อความให้อ่านออกเสียง), อ่าน, และเขียน (ให้พิมพ์พินอิน)</strong><br>
-        <span class="highlight-text">🔥 ภารกิจ:</span> เปลี่ยนตัวเลข <code>[👉 ใส่จำนวนข้อ 👈]</code>
-        เป็นจำนวนข้อสอบที่ต้องการ
+        <span class="highlight-text">🔥 ภารกิจ:</span> กำหนดจำนวนข้อแต่ละพาร์ทในช่องด้านล่างก่อน แล้วค่อยกดก๊อป
       </div>
+
+      <div class="q-count-box">
+        <div class="q-count-title">⚙️ ตั้งค่าจำนวนข้อสอบ</div>
+        <div class="q-count-row">
+          <div class="q-count-item">
+            <label>🎧 การฟัง</label>
+            <input type="number" id="q_listening" value="5" min="1" max="30">
+          </div>
+          <div class="q-count-item">
+            <label>📖 การอ่าน</label>
+            <input type="number" id="q_reading" value="5" min="1" max="30">
+          </div>
+          <div class="q-count-item">
+            <label>✍️ การเขียน</label>
+            <input type="number" id="q_writing" value="5" min="1" max="30">
+          </div>
+        </div>
+      </div>
+
       <div class="prompt-body">
         <pre id="p1">I have attached a Chinese vocabulary file.
-Act as a professional Chinese language teacher and create an HSK mock exam with [👉 ใส่จำนวนข้อ 👈] questions per section.
+Act as a professional Chinese language teacher and create an HSK mock exam.
 Divide the exam into 3 sections:
+- listening: __LISTENING__ questions
+- reading: __READING__ questions
+- writing: __WRITING__ questions
+
+Section details:
 1. listening - Multiple choice (4 options) with an audio sentence and a question.
 2. reading - Multiple choice (4 options) fill-in-the-blank questions.
 3. writing - Subjective. Provide the Thai translation and require the user to type the correct Chinese characters.
@@ -575,7 +655,9 @@ Features to add:
 3. **Result Details:**
    - Display the total score prominently (e.g., 10/15).
    - Display 3 separate boxes showing the score for Listening, Reading, and Writing.
-   - Show a detailed answer key for all questions, indicating if the answer was correct or wrong, and include the explanation from the `expl` field in the JSON.
+   - **Strengths (จุดเด่น):** Based on the results, highlight which skill(s) the student performed best in, with a brief encouraging message.
+   - **Areas to Improve (จุดควรพัฒนา):** Identify which skill(s) the student scored lowest in, and suggest what to focus on practicing.
+   - **Answer Review (เฉลยรายข้อ):** Show a detailed answer key for every question. For each item, show the question, whether the answer was correct or wrong, the correct answer, and the explanation from the `expl` field in the JSON.
    - Include a "กลับสู่หน้าแรก" (Return to Home) button to retake the exam.
 
 Output everything in a single HTML file without cutting off the code.</pre>
@@ -666,9 +748,31 @@ Output everything in a single HTML file without cutting off the code.</pre>
     // Copy Logic
     document.querySelectorAll('button.copy').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var el = document.getElementById(btn.dataset.target);
+        var targetId = btn.dataset.target;
+        var el = document.getElementById(targetId);
         if (!el) return;
         var text = el.textContent;
+
+        // Prompt 1: inject question counts
+        if (targetId === 'p1') {
+          var L = document.getElementById('q_listening') ? document.getElementById('q_listening').value : '5';
+          var R = document.getElementById('q_reading') ? document.getElementById('q_reading').value : '5';
+          var W = document.getElementById('q_writing') ? document.getElementById('q_writing').value : '5';
+          text = text.replace('__LISTENING__', L).replace('__READING__', R).replace('__WRITING__', W);
+        }
+
+        // Prompt 2: inject JSON from textarea
+        if (targetId === 'p2') {
+          var jsonArea = document.getElementById('json_paste_area');
+          var jsonVal = jsonArea ? jsonArea.value.trim() : '';
+          if (!jsonVal) {
+            alert('⚠️ กรุณาวาง JSON จาก Step 1 ลงในช่องก่อนกดคัดลอก');
+            jsonArea && jsonArea.focus();
+            return;
+          }
+          text = text.replace('__JSON_DATA__', jsonVal);
+        }
+
         var done = function () {
           var old = btn.textContent;
           btn.textContent = '✓ คัดลอกแล้ว';
