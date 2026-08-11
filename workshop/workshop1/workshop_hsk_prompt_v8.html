@@ -529,23 +529,20 @@ Strict rule: Output ONLY a single JSON code block. Do not include any other expl
 
     <div class="prompt-card">
       <div class="prompt-head">
-        <h3>Prompt 2 (สำหรับสร้างโครงเว็บ)</h3>
+        <h3>Prompt 2 (พิมพ์ต่อในแชทเดิม)</h3>
         <button class="copy" data-target="p2">📋 คัดลอก Prompt 2</button>
       </div>
       <div class="explain">
         <strong>เป้าหมาย:</strong> สร้างบ้านให้ข้อสอบอยู่<br>
-        สั่งให้ AI นำข้อสอบมาลงในเว็บ โดยสร้าง "หน้าเริ่มสอบ" ที่ให้กรอกชื่อ และสร้าง "หน้าทำข้อสอบ"
-        ที่มีแท็บสลับระหว่าง <strong>การฟัง / การอ่าน / การเขียน</strong><br>
-        <strong>คำแนะนำ:</strong> ลบข้อความ <code>[👉 วางข้อมูล...]</code> ออก แล้ววาง JSON จาก Step 1 ลงไปแทน
+        เนื่องจากเป็นแชทเดียวกัน AI ยังจำ JSON จาก Step 1 ได้อยู่ แค่ก๊อป Prompt นี้ไปวางต่อจากข้อความเดิมได้เลย<br>
+        <span class="highlight-text">⭐ ข้อดี:</span> ไม่ต้องก๊อปหรือวาง JSON เองเลย! AI จะย้อนกลับไปดู JSON ที่สร้างไว้ก่อนหน้าเอง
       </div>
       <div class="prompt-body">
         <pre id="p2">Please build an HSK mock exam Web App for me. Write everything in a single HTML file.
 Do not separate the files; I will open it directly in my browser.
 
 ## Exam Data (DATA)
-Embed this JSON data into a JavaScript variable named `EXAM_DATA`:
-
-[👉 วางข้อมูล JSON ที่ก๊อปปี้มาจาก Step 1 ตรงนี้ 👈]
+Please look back at the JSON exam data you generated in your previous message in this conversation, and embed that data into a JavaScript variable named `EXAM_DATA`. Do NOT ask me to paste it again.
 
 ## Web Design (Use Tailwind CSS via CDN)
 - **Important Font Setup:** Import the Google Font "K2D" as the main font to display Thai beautifully on Mac and Windows.
