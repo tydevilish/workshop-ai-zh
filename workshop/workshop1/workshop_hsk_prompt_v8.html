@@ -445,42 +445,41 @@
     <div class="panel note">
       <strong>💡 ก่อนเริ่มงาน (คำศัพท์น่ารู้):</strong><br>
       <ul>
-        <li><strong>JSON:</strong> กล่องใส่ข้อมูลที่คอมพิวเตอร์อ่านง่าย แบ่งช่องชัดเจนว่าอันไหนคำถาม อันไหนตัวเลือก</li>
-        <li><strong>HTML:</strong> โครงสร้างของหน้าเว็บ (เสาและหลังคา)</li>
-        <li><strong>Tailwind CSS:</strong> ชุดตกแต่งเว็บสำเร็จรูป ช่วยระบายสีและจัดหน้าให้สวยเป๊ะแบบแอปมืออาชีพ</li>
-        <li><strong>Web Speech API:</strong> ระบบอ่านออกเสียง (Text-to-Speech) ที่ฝังอยู่ในเบราว์เซอร์
-          เราจะใช้ตัวนี้สร้างเสียงจำลองให้ข้อสอบพาร์ทการฟัง</li>
+        <li><strong>HTML (เอช-ที-เอ็ม-แอล):</strong> เปรียบเสมือน <strong>'เสาเข็มและโครงสร้างตึก'</strong> ของเว็บไซต์ เป็นคำสั่งที่บอกระบบว่า หน้าเว็บนี้จะมีกล่องข้อความตรงไหน มีปุ่มกดตรงไหนบ้าง</li>
+        <li><strong>JSON (เจ-สัน):</strong> เปรียบเสมือน <strong>'ตู้เก็บเอกสาร หรือ คลังข้อสอบ'</strong> เป็นรูปแบบไฟล์ที่เก็บข้อมูลคำถาม-คำตอบ เพื่อให้คอมพิวเตอร์ดึงมาใช้ได้อย่างรวดเร็ว</li>
+        <li><strong>Tailwind CSS (เทล-วิน-ซี-เอส-เอส):</strong> เปรียบเสมือน <strong>'มัณฑนากร หรือ ช่างตกแต่งภายใน'</strong> เป็นชุดคำสั่งสำเร็จรูปที่ช่วยตกแต่งหน้าตาเว็บของเราให้สวยงาม ทันสมัย</li>
+        <li><strong>Web Speech API (เว็บ-สปีช-เอ-พี-ไอ):</strong> เปรียบเสมือน <strong>'ปากและเสียง'</strong> ของระบบ เป็นฟังก์ชันอัจฉริยะที่คอยแปลงข้อความอักษรจีนให้กลายเป็นเสียงอ่านที่ถูกต้อง สำหรับพาร์ทการฟัง</li>
       </ul>
     </div>
 
-    <h2>แผนการสร้างเว็บวันนี้ (แบ่งเป็น 4 สเตป)</h2>
-    <p>เราจะค่อยๆ ประกอบร่างเว็บขึ้นมา เพื่อให้ทุกคนได้เห็นกลไกการทำงานเบื้องหลังของแอปพลิเคชัน</p>
+    <h2>แผนการสร้างเว็บวันนี้ (แบ่งเป็น 4 สเตปหลัก)</h2>
+    <p>เพื่อให้ได้ระบบฝึกทำข้อสอบ HSK ที่มีประสิทธิภาพและครอบคลุมทั้ง 3 ทักษะ เราจะแบ่งการเขียนคำสั่ง (Prompt) ออกเป็น 4 สเตปด้วยกันครับ:</p>
     <table>
       <tr>
         <th>สเตป</th>
         <th>เราจะทำอะไรกัน?</th>
       </tr>
       <tr>
-        <td><span class="step-badge">1</span><strong>สร้างข้อมูล (JSON)</strong></td>
-        <td>ให้ AI แต่งข้อสอบ 3 หมวด (ฟัง, อ่าน, เขียน) จากคำศัพท์ที่เรามี</td>
+        <td><span class="step-badge">1</span><strong>เตรียมความพร้อมของข้อมูล (Data Preparation)</strong></td>
+        <td>นำเข้าข้อมูลคำศัพท์ ข้อสอบเก่า หรือบทสนทนา ให้ AI สร้างเป็นข้อสอบในรูปแบบไฟล์ JSON</td>
       </tr>
       <tr>
-        <td><span class="step-badge">2</span><strong>สร้างหน้าตาเว็บ (UI)</strong></td>
-        <td>วาดหน้าเริ่มสอบ และสร้างโครงสำหรับแสดงข้อสอบทั้ง 3 หมวด</td>
+        <td><span class="step-badge">2</span><strong>ขึ้นโครงสร้างเว็บไซต์ (HTML Structure)</strong></td>
+        <td>กางข้อมูลจาก JSON มาสร้างเป็นหน้าตาเว็บไซต์ แบ่งแท็บทักษะ ฟัง, อ่าน, เขียน พร้อมปุ่มต่างๆ</td>
       </tr>
       <tr>
-        <td><span class="step-badge">3</span><strong>ติดระบบเสียง & แผงข้อสอบ</strong></td>
-        <td><span class="highlight-text">ภารกิจพิเศษ!</span> สั่ง AI เพิ่มปุ่มกดฟังเสียง และแผงข้อสอบ (Palette)</td>
+        <td><span class="step-badge">3</span><strong>เชื่อมต่อระบบเสียงและแผงควบคุม (Audio & Navigation)</strong></td>
+        <td><span class="highlight-text">ภารกิจพิเศษ!</span> ฝัง Web Speech API เพื่อให้อ่านออกเสียง และสร้างแผงควบคุมข้อสอบ</td>
       </tr>
       <tr>
-        <td><span class="step-badge">4</span><strong>ระบบตรวจคะแนน</strong></td>
-        <td>เพิ่มตัวจับเวลา และหน้าสรุปผลการสอบอย่างละเอียด</td>
+        <td><span class="step-badge">4</span><strong>ระบบประเมินผลอัจฉริยะและจับเวลา (Evaluation & Timing)</strong></td>
+        <td>สร้างระบบตรวจข้อสอบอัตโนมัติ วิเคราะห์ผลสอบแบบเจาะลึก และระบบจับเวลาถอยหลัง</td>
       </tr>
     </table>
 
     <hr>
 
-    <h2>Step 1: ให้ AI สร้างข้อสอบ 3 หมวด (สร้าง JSON)</h2>
+    <h2>Step 1: การเตรียมข้อมูล (Data Preparation)</h2>
 
     <div class="prompt-card">
       <div class="prompt-head">
@@ -488,10 +487,9 @@
         <button class="copy" data-target="p1">📋 คัดลอก Prompt 1</button>
       </div>
       <div class="explain">
-        <strong>เป้าหมาย:</strong> เตรียมข้อมูลดิบ (Data)<br>
-        ข้อสอบ HSK มี 3 พาร์ทหลัก เราจะสั่งให้ AI นำคำศัพท์มาแต่งข้อสอบทั้งแบบ <strong>ฟัง
-          (ต้องมีข้อความให้อ่านออกเสียง), อ่าน, และเขียน (ให้พิมพ์พินอิน)</strong><br>
-        <span class="highlight-text">🔥 ภารกิจ:</span> กำหนดจำนวนข้อแต่ละพาร์ทในช่องด้านล่างก่อน แล้วค่อยกดก๊อป
+        <strong>เป้าหมาย:</strong> เตรียมความพร้อมของข้อมูล (Data Preparation)<br>
+        เราจะสั่งให้ AI นำเข้าข้อมูลจากเอกสารที่เราเตรียมไว้ โดยแปลงไฟล์เนื้อหาให้เป็นนามสกุล JSON เสมอ คุณครูสามารถใช้ไฟล์คำศัพท์ ข้อสอบเก่า หรือบทสนทนาที่มีอยู่แล้ว โยนให้ AI สร้างข้อสอบได้เลย<br>
+        <span class="highlight-text">🔥 ภารกิจ:</span> ระบุว่าต้องการข้อสอบทักษะละกี่ข้อในช่องด้านล่างก่อน แล้วค่อยกดก๊อป
       </div>
 
       <div class="q-count-box">
@@ -550,7 +548,7 @@ Strict rule: Output ONLY a single JSON code block. Do not include any other expl
 
     <hr>
 
-    <h2>Step 2: สร้างหน้าตาเว็บ และโครงข้อสอบ (UI & Layout)</h2>
+    <h2>Step 2: การสร้างโครงสร้างเว็บ (HTML Structure)</h2>
 
     <div class="prompt-card">
       <div class="prompt-head">
@@ -558,10 +556,9 @@ Strict rule: Output ONLY a single JSON code block. Do not include any other expl
         <button class="copy" data-target="p2">📋 คัดลอก Prompt 2</button>
       </div>
       <div class="explain">
-        <strong>เป้าหมาย:</strong> สร้างบ้านให้ข้อสอบอยู่<br>
-        เนื่องจากเป็นแชทเดียวกัน AI ยังจำ JSON จาก Step 1 ได้อยู่ แค่ก๊อป Prompt นี้ไปวางต่อจากข้อความเดิมได้เลย<br>
-        <span class="highlight-text">⭐ ข้อดี:</span> ไม่ต้องก๊อปหรือวาง JSON เองเลย! AI จะย้อนกลับไปดู JSON
-        ที่สร้างไว้ก่อนหน้าเอง
+        <strong>เป้าหมาย:</strong> นำข้อมูลจากสเตปที่ 1 มากางออก แล้วสร้างเป็นหน้าตาเว็บไซต์<br>
+        ระบุว่าต้องมี 'หน้าหลัก' และ 'หน้าทำแบบทดสอบ' ที่แบ่งเป็นทักษะการฟัง, การอ่าน, และการเขียน พร้อมทั้งสร้างปุ่ม 'ถัดไป' 'ย้อนกลับ' กำหนดให้มี 4 ตัวเลือก (ก, ข, ค, ง) และทักษะการเขียนให้มี 'กล่องข้อความ'<br>
+        <span class="highlight-text">⭐ จุดสังเกต:</span> หากลองเปิดเว็บดู จะเห็นปุ่มฟังเสียงโผล่ขึ้นมาแล้ว แต่ถ้ากดแล้วยังไม่มีเสียง... ไม่ต้องตกใจนะครับ เพราะตอนนี้เราเพิ่งสร้างแค่หน้าตา ยังไม่ได้เชื่อมต่อระบบเสียงครับ
       </div>
       <div class="prompt-body">
         <pre id="p2">Please build an HSK mock exam Web App for me. Write everything in a single HTML file.
@@ -613,7 +610,7 @@ Rule: Do NOT use &lt;script type="module"&gt; and do NOT fetch external data. Ou
 
     <hr>
 
-    <h2>Step 3: ใส่ระบบเสียงและแผงควบคุม (Interactive Features)</h2>
+    <h2>Step 3: ระบบเสียงและแผงควบคุม (Audio & Navigation)</h2>
 
     <div class="prompt-card">
       <div class="prompt-head">
@@ -621,9 +618,8 @@ Rule: Do NOT use &lt;script type="module"&gt; and do NOT fetch external data. Ou
         <button class="copy" data-target="p3">📋 คัดลอก Prompt 3</button>
       </div>
       <div class="explain">
-        <strong>เป้าหมาย:</strong> ติดตั้งฟังก์ชันที่ทำให้เว็บเหมือนแอปจริง<br>
-        นี่คือจุดเด่นของเว็บเรา! เราจะใส่ <strong>"ปุ่มฟังเสียง"</strong> ในหมวดการฟัง และสร้าง <strong>"แผงข้อสอบ
-          (Palette)"</strong> เพื่อให้ผู้สอบกดดูว่าข้อไหนทำแล้วหรือยังไม่ได้ทำ
+        <strong>เป้าหมาย:</strong> ทำให้ระบบเสียงทำงาน และสร้างแผงควบคุมข้อสอบ<br>
+        เราจะนำระบบ Web Speech API เข้ามาฝังในปุ่ม เพื่อให้อ่านออกเสียงข้อสอบในทักษะการฟังได้อย่างสมบูรณ์แบบ นอกจากนี้ จะสร้าง <strong>"แผงควบคุมข้อสอบ (Control Panel)"</strong> เพื่อให้นักเรียนเช็คได้ว่าทำข้อไหนไปแล้ว หรือกลับมาทำข้อที่ข้ามไปได้ทันที
       </div>
       <div class="prompt-body">
         <pre id="p3">Excellent! Now I want to add more interactive functions to the existing code.
@@ -655,7 +651,7 @@ Same rule: Combine everything in a single HTML file. Do NOT cut or split the cod
 
     <hr>
 
-    <h2>Step 4: จับเวลาและตรวจข้อสอบ (Scoring System)</h2>
+    <h2>Step 4: การตรวจข้อสอบและวิเคราะห์ผล (Evaluation & Timing)</h2>
 
     <div class="prompt-card">
       <div class="prompt-head">
@@ -663,9 +659,8 @@ Same rule: Combine everything in a single HTML file. Do NOT cut or split the cod
         <button class="copy" data-target="p4">📋 คัดลอก Prompt 4</button>
       </div>
       <div class="explain">
-        <strong>เป้าหมาย:</strong> บทสรุปของการทำเว็บสอบ<br>
-        สเตปสุดท้าย เราจะใส่ระบบจับเวลา เมื่อหมดเวลาหรือกดส่ง จะตรวจคำตอบและแยกคะแนนให้ดูว่า ทักษะฟัง อ่าน เขียน
-        ได้คะแนนเท่าไหร่บ้าง<br>
+        <strong>เป้าหมาย:</strong> สร้างระบบประเมินผลอัจฉริยะและจับเวลาเพื่อลดภาระคุณครู<br>
+        เราจะสั่งให้ AI สร้างระบบตรวจข้อสอบอัตโนมัติเมื่อกดส่ง โดยวิเคราะห์ผลสอบแบบเจาะลึกรายข้อและรายทักษะ ให้ข้อเสนอแนะจุดเด่นและจุดที่ต้องพัฒนา พร้อมทั้งจำลองสนามสอบจริงด้วยการตั้งเวลาและจับเวลาถอยหลัง<br>
         <span class="highlight-text">🔥 ภารกิจ:</span> เปลี่ยนตัวเลขเวลาใน Prompt ก่อนกดส่ง!
       </div>
       <div class="prompt-body">
