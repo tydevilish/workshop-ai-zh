@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="th">
 
 <head>
@@ -6,6 +6,34 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>เวิร์กช็อป: สร้างเว็บฝึกเขียนตัวอักษรจีนด้วยการลากเส้น ด้วย AI</title>
   <style>
+    /* LINE Seed Sans TH, served from jsdelivr with access-control-allow-origin: *
+   so it also loads when this page is opened straight from file://.
+   If the room has no internet the browser silently falls back to the system
+   font stack below, which is why the stack is still spelled out. */
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "LINE Seed Sans TH";
+      src: url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_XBd.ttf") format("truetype");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --bg: oklch(97.5% 0.022 326);
       --surface: oklch(99% 0.012 327);
@@ -33,7 +61,7 @@
       padding: 0;
       background: var(--bg);
       color: var(--ink);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai",
+      font-family: "LINE Seed Sans TH", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai",
         "Helvetica Neue", Arial, sans-serif;
       line-height: 1.7;
       -webkit-text-size-adjust: 100%;
