@@ -727,6 +727,64 @@ Output everything in a single HTML file without cutting off the code.</pre>
       </tr>
     </table>
 
+    <hr>
+
+    <h2>แบบรวบรัด: Prompt รวม (สำหรับขั้นแอดวานซ์)</h2>
+    <p class="small">หากต้องการทำรวดเดียวจบ สามารถคัดลอก Prompt นี้ไปวางได้เลย (AI จะสร้างทั้งข้อมูลและหน้าเว็บที่สมบูรณ์ให้ทันที)</p>
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt รวม (แนบไฟล์คำศัพท์ไปด้วย)</h3>
+        <button class="copy" data-target="p_combined">📋 คัดลอก Prompt รวม</button>
+      </div>
+      <div class="explain">
+        <strong>ข้อควรระวัง:</strong> การสั่งแบบรวมในครั้งเดียว อาจจะทำให้ AI พิมพ์โค้ดสะดุด หรือให้คำตอบยาวเกินไปจนตัดจบ ถ้าเจอปัญหาโค้ดไม่ครบ ให้พิมพ์บอก AI ว่า "พิมพ์โค้ดต่อให้จบในกล่องเดียว"<br>
+        * จำนวนข้อสอบจะอ้างอิงจากตัวเลขที่ตั้งไว้ใน Step 1
+      </div>
+      <div class="prompt-body">
+        <pre id="p_combined">I have attached a Chinese vocabulary file.
+Act as a professional Chinese language teacher and create an HSK mock exam.
+First, generate the exam data. Divide the exam into 3 sections:
+- listening: __LISTENING__ questions
+- reading: __READING__ questions
+- writing: __WRITING__ questions
+
+Section details:
+1. listening - Multiple choice (4 options) with an audio sentence and a question.
+2. reading - Multiple choice (4 options) fill-in-the-blank questions.
+3. writing - Subjective. Provide the Thai translation and require the user to type the correct Chinese characters.
+
+Please format the data strictly as a "JSON" object.
+{
+  "listening": [
+    { "id": 1, "audio": "ประโยคสนทนาภาษาจีน...", "question": "คำถาม...", "choices": [ {"label": "A", "zh": "ตัวเลือก A"} ], "answer": "A", "expl": "เฉลยสั้นๆ" }
+  ],
+  "reading": [
+    { "id": 11, "question": "คำถามเว้นช่องว่าง...", "choices": [ {"label": "A", "zh": "ตัวเลือก A"} ], "answer": "A", "expl": "เฉลยสั้นๆ" }
+  ],
+  "writing": [
+    { "id": 21, "question": "พิมพ์คำศัพท์ภาษาจีนที่มีความหมายว่า: [คำแปล]", "py": "พินอินของคำตอบ", "answer": "อักษรจีนที่ถูกต้อง", "expl": "เฉลย" }
+  ]
+}
+
+After creating the JSON data, embed it into a JavaScript variable named `EXAM_DATA` and build an HSK mock exam Web App for me. Write everything in a single HTML file. Do not separate the files.
+
+## Web Design (Use Tailwind CSS via CDN)
+- **Important Font Setup:** Import the Google Font "K2D" as the main font.
+- Use a light cream background (#fdf8f5) and dark gray for main text.
+- Primary buttons should be orange (#d35400) with modern rounded-2xl cards and shadows.
+
+## Features to Implement:
+1. **Start Screen:** Display app name, input for "กรอกชื่อผู้สอบ", and a start button.
+2. **Exam Screen:** 3 tabs ("🎧 การฟัง", "📖 การอ่าน", "✍️ การเขียน"). "ถัดไป" (Next) switches between them.
+3. **Text-to-Speech:** In Listening, add a "▶ ฟังเสียง" button. Use `window.speechSynthesis` (zh-CN) to read the `audio` field.
+4. **Question Palette:** A pop-up grid of all question numbers. Answered = solid orange, unanswered = gray border. Clicking jumps to the question.
+5. **Countdown Timer:** Display a total timer of 15 minutes. Auto-submit when time is up.
+6. **Result Screen:** Show total score, separate scores for each skill, Strengths, Areas to Improve, and detailed Answer Review (showing explanation from `expl`). Include a "กลับสู่หน้าแรก" button.
+
+Rule: Output ONLY the final HTML code as a single block. Do not use &lt;script type="module"&gt; and do not fetch external data.</pre>
+      </div>
+    </div>
+
   </div>
 
   <!-- Lightbox Modal -->
@@ -772,7 +830,7 @@ Output everything in a single HTML file without cutting off the code.</pre>
         var text = el.textContent;
 
         // Prompt 1: inject question counts
-        if (targetId === 'p1') {
+        if (targetId === 'p1' || targetId === 'p_combined') {
           var L = document.getElementById('q_listening') ? document.getElementById('q_listening').value : '5';
           var R = document.getElementById('q_reading') ? document.getElementById('q_reading').value : '5';
           var W = document.getElementById('q_writing') ? document.getElementById('q_writing').value : '5';

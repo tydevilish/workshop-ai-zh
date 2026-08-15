@@ -992,6 +992,216 @@ Give me the updated file.</pre>
 
     <hr>
 
+    <h2>โบนัส: Prompt รวม (สร้างทั้งเกมในครั้งเดียว)</h2>
+    <div class="panel note">
+      <strong>ขั้นนี้ทำอะไร:</strong> ถ้าไม่อยากสั่งทีละ Step กด Prompt เดียวจบ ได้ทั้งเกม + XP/ยศ + ลงทะเบียน +
+      Leaderboard พร้อมกัน<br>
+      <strong>ข้อควรระวัง:</strong> ก้อนนี้ยาวและสั่งเยอะในครั้งเดียว โอกาสที่ Gemini
+      เขียนโค้ดยาวจนถูกตัดกลางคันสูงกว่าแบบแบ่ง 3 Step ถ้าโค้ดขาด ให้พิมพ์ "ขอเป็นไฟล์เดียวจบ ใส่ใน canvas" ตาม <a
+        href="#rescue">Diagnostic</a> ท้ายหน้า
+    </div>
+    <div class="prompt-card">
+      <div class="prompt-head">
+        <h3>Prompt รวม</h3>
+        <button class="copy" data-target="pall">📋 คัดลอก Prompt รวม</button>
+      </div>
+      <div class="prompt-body">
+        <div class="pre-wrap clamped">
+          <pre id="pall">Build me a Chinese vocabulary discovery game as ONE self-contained HTML file.
+I am a Chinese language teacher. I cannot write or read code.
+
+## OUTPUT REQUIREMENT
+A single .html file containing all HTML, CSS and JavaScript. I will double-click it to
+open it in a browser. No server, no install, no build step. Give me the COMPLETE file as
+ONE piece, ready to open. Never split it across two messages. If it will not fit in one
+chat message, put it in a canvas or an attached file. Keep the CSS and JavaScript compact.
+
+## HARD RULES — breaking any of these makes the game fail completely
+- The ONLY external resources allowed, exactly as given, placed in &lt;head&gt;. No other
+  library — no React, Vue, jQuery, icon set, or animation library:
+    &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+    &lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+    &lt;link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&amp;family=Noto+Sans+SC:wght@700&amp;display=swap" rel="stylesheet"&gt;
+  These are classic script/link tags, not modules, so they load fine from file:// — but
+  the computer needs internet the first time the file opens.
+- No &lt;script type="module"&gt;, no import, no export — ES modules are blocked on file://.
+- No fetch() or XMLHttpRequest anywhere. The only network call in the whole app besides
+  the head tags above is the pronunciation audio URL further down, via new Audio(),
+  never fetch().
+- All game data is embedded below — load nothing else from the network.
+- All UI text (titles, buttons, messages) in THAI. Chinese words stay Chinese, with pinyin.
+
+## REGISTRATION GATE (shows first, before anything else)
+- Before any game screen can be seen (including the home screen's first paint), show a
+  full-screen form with two text inputs: "ชื่อ-นามสกุล" and "รหัสนักเรียน".
+- A "เริ่มเล่น" button that stays disabled until both fields are non-empty.
+- Store {studentId, name} in localStorage as the current player.
+- If a studentId that already played on this browser is typed again, prefill the saved
+  name and skip straight past the gate on the next page load. Ask again only the first
+  time this browser sees that studentId.
+
+## HOME SCREEN
+Game name, one-line description, the current player's rank + XP, a "เริ่มเล่น" button
+into the board, a "จัดอันดับ" (leaderboard) button, and a "ยศทั้งหมด" button.
+
+## THE GAME: "ผสมธาตุ" (combine the elements), like Infinite Craft
+The player starts with only four elements and discovers new things by combining what
+they already have. Anything they discover can be combined again, so the board keeps
+growing. Think of it as a chain, not a quiz: there is no wrong answer to punish, only
+combinations that do nothing yet.
+- The player starts with exactly four cards: 水 火 风 土.
+- The player drags one card onto another, or taps two cards in a row on phone.
+- If that pair is in the recipe list below, in either order, the result is DISCOVERED:
+  show a result card with the new Chinese word, its pinyin, its Thai meaning, a speaker
+  button, and the Thai sentence explaining WHY those two things make it. Then the new
+  item becomes a permanent card on the board that can be combined again.
+- A pair can produce something from an earlier discovery too, for example
+  水+火 = 蒸汽, then 蒸汽+沙尘 = 云, then 云+水 = 雨. This chaining is the whole point.
+- If the pair is not in the list, show a short Thai message: "ไม่มีคำนั้นๆ" and put the
+  cards back. Never freeze, never show an error.
+- Count consecutive failed attempts, reset on any success. After 3 in a row, automatically
+  suggest ONE pair the player can currently make, e.g. "ลองผสม 水 กับ 火 ดูสิ" — reuse the
+  same "find one makeable pair" logic as the hint button, so failing never leaves them stuck.
+- Cards must never overlap. Compute the nearest free position once and place the card
+  there. Do NOT write a physics engine or an animation loop that keeps pushing cards apart.
+- Show progress as "ค้นพบแล้ว 5/45". When all 45 are found, show a celebration screen that
+  also shows the current player's name and total XP, plus a button straight to the leaderboard.
+- Save discoveries in localStorage.
+- Add a "ยังไม่รู้จะผสมอะไร" hint button that reveals ONE pair the player can make right now
+  from cards they already own. It never reveals a pair they cannot reach yet.
+- Every Chinese word (starting cards, discoveries, and rank names) has a speaker button
+  that plays its pronunciation using this exact function (already tested, works from
+  file://, tries Google's TTS voice first and falls back to the browser's own voice if
+  that request fails, e.g. offline):
+
+function speak(hanzi) {
+  const url = 'https://translate.google.com/translate_tts?ie=UTF-8'
+    + '&amp;q=' + encodeURIComponent(hanzi)
+    + '&amp;tl=zh-CN&amp;total=1&amp;idx=0'
+    + '&amp;textlen=' + hanzi.length
+    + '&amp;client=tw-ob&amp;prev=input&amp;ttsspeed=1';
+  new Audio(url).play().catch(() =&gt; {
+    const u = new SpeechSynthesisUtterance(hanzi);
+    u.lang = 'zh-CN';
+    speechSynthesis.speak(u);
+  });
+}
+
+Use new Audio() directly, and only for this one URL. Never use fetch() for it.
+
+## RECIPE DATA — embed exactly as a JavaScript array
+Format: first item, second item, result, pinyin of result, Thai meaning, Thai explanation.
+Convert ONLY the 45 comma-separated rows below. Keep all six fields on every row. Never
+write an explanation of your own: the Thai sentences below are checked facts, and
+inventing different ones would teach my students something wrong.
+
+水,土,黏土,nián tŭ,ดินเหนียว,น้ำทำให้ดินที่มีดินเหนียวปนอยู่เหนียวและปั้นได้
+水,火,蒸汽,zhēng qì,ไอน้ำ,ความร้อนเปลี่ยนน้ำที่เป็นของเหลวให้กลายเป็นไอน้ำ
+水,风,波浪,bō làng,คลื่น,ลมถ่ายเทพลังงานสู่ผิวน้ำและทำให้เกิดคลื่น
+风,土,沙尘,shā chén,ฝุ่นในอากาศ,การกัดเซาะของลมพัดพาดินละเอียดขึ้นเป็นฝุ่นในอากาศ
+火,土,熔岩,róng yán,ลาวา,ความร้อนที่มากพอหลอมหินให้ละลาย หินหลอมเหลวที่ผิวโลกคือลาวา
+水,水,河,hé,แม่น้ำ,น้ำที่ไหลมารวมกันเป็นแหล่งน้ำขนาดใหญ่กลายเป็นแม่น้ำ
+火,火,光,guāng,แสง,ไฟที่ลุกโชนให้แสงสว่างที่มองเห็นได้
+风,风,空气,kōng qì,อากาศ,ลมคืออากาศที่เคลื่อนที่ ดังนั้นลมซ้ำๆ จึงย้อนกลับไปหมายถึงอากาศเอง
+黏土,火,砖,zhuān,อิฐ,ดินเหนียวถูกขึ้นรูป ตากแห้ง แล้วเผาจนกลายเป็นอิฐที่ทนทาน
+黏土,水,泥,ní,โคลน,การเติมน้ำลงในดินที่มีดินเหนียวปนอยู่ทำให้เกิดโคลน
+蒸汽,沙尘,云,yún,เมฆ,ไอน้ำควบแน่นบนอนุภาคฝุ่นเล็กๆ จนกลายเป็นละอองเมฆ
+熔岩,水,岩石,yán shí,หิน,น้ำดึงความร้อนออกจากลาวา ช่วยให้มันแข็งตัวกลายเป็นหิน
+河,土,河岸,hé àn,ตลิ่ง,ดินริมแม่น้ำกลายเป็นตลิ่ง
+河,河,海洋,hăi yáng,มหาสมุทร,แม่น้ำหลายสายในที่สุดก็ไหลลงสู่มหาสมุทร
+云,水,雨,yŭ,ฝน,ละอองเมฆเติบโตขึ้นจนหนักพอจะตกลงมาเป็นฝน
+云,风,天气,tiān qì,สภาพอากาศ,ลมพัดพาความชื้นและช่วยกำหนดรูปแบบสภาพอากาศที่เปลี่ยนแปลง
+岩石,风,沙,shā,ทราย,ลมและการผุกร่อนสลายหินจนกลายเป็นตะกอนอย่างทราย
+泥,火,陶器,táo qì,เครื่องปั้นดินเผา,โคลนที่มีดินเหนียวปนอยู่สามารถขึ้นรูปและเผาเป็นเครื่องปั้นดินเผาได้
+砖,砖,墙,qiáng,กำแพง,อิฐถูกนำมาก่อเรียงกันเป็นกำแพง
+砖,火,壁炉,bì lú,เตาผิง,อิฐกักเก็บไฟในบ้านอย่างปลอดภัยจนกลายเป็นเตาผิง
+岩石,土,山,shān,ภูเขา,ภูเขาเผยให้เห็นหินที่ถูกดันขึ้นมาและเกิดดินจากการผุกร่อน
+云,光,天空,tiān kōng,ท้องฟ้า,เมฆและแสงกลางวันต่างก็มองเห็นได้ทั่วท้องฟ้า
+河,海洋,鱼,yú,ปลา,ปลาอาศัยอยู่ในแม่น้ำและมหาสมุทร
+土,海洋,地球,dì qíu,โลก,แผ่นดินและมหาสมุทรประกอบกันเป็นดาวเคราะห์โลก
+砖,水,井,jĭng,บ่อน้ำ,หลุมที่บุด้วยอิฐเพื่อเข้าถึงน้ำใต้ดินคือบ่อน้ำ
+云,土,雾,wù,หมอก,เมฆที่ระดับพื้นดินคือหมอก
+河,岩石,乌龟,wū guī,เต่า,สัตว์เลื้อยคลานเชื่องช้าที่มีกระดองแข็งคือเต่า
+雨,风,暴风雨,bào fēng yŭ,พายุฝน,ลมแรงและฝนหนักมารวมกันกลายเป็นพายุฝน
+天气,雨,雨天,yŭ tiān,วันฝนตก,ฝนทำให้วันนั้นกลายเป็นวันที่อากาศฝนตก
+沙,火,玻璃,bō li,กระจก,กระจกเริ่มจากทรายที่ถูกหลอมด้วยอุณหภูมิสูงมาก
+沙,水,沙滩,shā tān,ชายหาด,ทรายที่ทับถมกันพบกับน้ำกลายเป็นชายหาด
+山,火,火山,huŏ shān,ภูเขาไฟ,火 (ไฟ) และ 山 (ภูเขา) รวมกันเป็นคำจีนจริง 火山 แปลว่าภูเขาไฟ
+光,天气,太阳,tài yang,ดวงอาทิตย์,แสงแดดให้พลังงานที่ขับเคลื่อนสภาพอากาศส่วนใหญ่ของโลก
+天空,海洋,月亮,yuè liang,ดวงจันทร์,ดวงจันทร์บนท้องฟ้ามีอิทธิพลสำคัญต่อกระแสน้ำขึ้นน้ำลงในมหาสมุทร
+空气,雨,雪,xuĕ,หิมะ,เมื่อสภาพอากาศหนาวเย็นพอ หยาดน้ำฟ้าจะตกลงมาเป็นหิมะแทนที่จะเป็นฝน
+天空,雨,下雨,xià yŭ,ฝนตก,ฝนที่ตกลงมาจากท้องฟ้าให้กำเนิดคำกริยาในชีวิตประจำวัน 下雨 แปลว่าฝนตก
+泥,雨,植物,zhí wù,พืช,พืชต้องการดินและน้ำเพื่อหยั่งรากและเติบโต
+水,陶器,杯子,bēi zi,ถ้วย,ถ้วยเซรามิกเป็นภาชนะทั่วไปสำหรับดื่มน้ำ
+土,雨,草,căo,หญ้า,ดินและฝนทำให้หญ้างอกขึ้น
+鱼,海洋,鲸,jīng,วาฬ,วาฬคือยักษ์ใหญ่แห่งมหาสมุทร
+光,墙,影子,yĭng zi,เงา,แสงที่ถูกกำแพงบังทำให้เกิดเงา
+砖,天空,塔,tă,หอคอย,อิฐที่ก่อซ้อนขึ้นสู่ท้องฟ้าทำให้เกิดหอคอย
+山,河,山谷,shān gŭ,หุบเขา,พื้นที่ต่ำระหว่างภูเขาที่แม่น้ำกัดเซาะคือหุบเขา
+水,鱼,游泳,yóu yŏng,ว่ายน้ำ,การเคลื่อนไหวในน้ำเหมือนปลาคือว่ายน้ำ
+地球,山,地震,dì zhèn,แผ่นดินไหว,พื้นดินและภูเขาสั่นสะเทือนพร้อมกันคือแผ่นดินไหว
+
+## XP &amp; RANKS
+One XP total for the game, saved in localStorage with the discoveries. Discovering a new
+item gives 25 XP. Only the FIRST time counts for each item; replaying something already
+discovered gives 0 XP, so nobody can farm the same pair. Finishing all 45 gives 1125 XP.
+Ranks are the real Chinese imperial examination ladder — the player climbs by studying,
+exactly like the exam candidates did. Use these exact eight rows, in this order, do not
+invent extra ranks or rename them (format: Chinese rank, pinyin, Thai meaning, XP needed):
+
+童生,tóngshēng,นักเรียน,0
+秀才,xiùcái,บัณฑิตประจำอำเภอ,50
+举人,jǔrén,บัณฑิตประจำมณฑล,125
+贡士,gòngshì,บัณฑิตที่ถูกส่งเข้าเมืองหลวง,250
+进士,jìnshì,บัณฑิตหลวง,400
+探花,tànhuā,อันดับสามของแผ่นดิน,600
+榜眼,bǎngyǎn,อันดับสองของแผ่นดิน,850
+状元,zhuàngyuán,จอหงวน อันดับหนึ่งของแผ่นดิน,1125
+
+Never describe a rank as low, poor, or common. Every rank is an achievement: 童生 already
+means a student enrolled to sit the imperial exam.
+- A bar at the top of every screen: current rank in Chinese with its Thai meaning under it,
+  then a progress bar to the next rank, e.g. "秀才 · บัณฑิตประจำอำเภอ" with "อีก 45 XP จะเป็น
+  举人". At 状元 show "สูงสุดแล้ว" instead of a bar.
+- When XP is earned, show "+25 XP" floating briefly near where it happened.
+- When a rank goes up, show a celebration card with the new rank large, its pinyin, its Thai
+  meaning, and a speaker button that reads the Chinese rank aloud.
+- A "ยศทั้งหมด" screen listing all eight ranks with the XP needed, ranks already reached
+  marked clearly, ranks not yet reached shown greyed.
+
+## LEADERBOARD
+- Keep ONE players table in localStorage: a map from studentId to {name, xp}. Every time the
+  XP total changes, overwrite the current player's {name, xp} under their studentId. Never
+  create a second row for the same studentId. Do not add a second scoring system — reuse the
+  XP already tracked for ranks.
+- The "จัดอันดับ" screen lists every player in the local table, sorted by XP highest to
+  lowest, showing rank number, name, and XP, with the current player's row highlighted.
+- State directly on this screen, in Thai, that the ranking only includes players who used
+  THIS browser on THIS computer, since the file has no server, e.g. "อันดับนี้นับเฉพาะคนที่
+  เคยเล่นจากเครื่องนี้เครื่องเดียว".
+
+## VISUAL STYLE
+Style everything with Tailwind utility classes. Fonts: "Quicksand" for all Thai/English UI
+text, "Noto Sans SC" (weight 700) for Chinese characters only. Use exactly these colours:
+  background #FFF9DB (cream) · card #FFFFFF · primary accent #B2F2BB (soft mint) ·
+  secondary accent #FFD8A8 (warm peach) · action/links #74C0FC (sky blue) ·
+  text a dark warm grey, not pure black.
+Cards have a large corner radius (rounded-3xl or bigger). Buttons are capsule (rounded-full).
+Soft shadows (shadow-lg). Chinese characters large and easy to read. Big tap targets. Works
+on desktop and phone.
+
+## NEVER BREAK
+Anywhere something can go wrong, show a short Thai message explaining what to do next. Never
+show a blank white screen and never freeze. I cannot debug code myself.
+
+Give me the complete single HTML file as ONE piece, ready to open.</pre>
+        </div>
+        <button class="prompt-more" type="button">ดูเพิ่มเติม ▾</button>
+      </div>
+    </div>
+
+    <hr>
+
     <h3 id="rescue">Diagnostic: อาการ → สาเหตุจริง → วิธีแก้</h3>
     <p class="small">เจอปัญหาไม่ต้องตกใจ ทุกอาการมีสาเหตุที่อธิบายได้ ดูว่าตรงกับแถวไหน อ่านว่าจริง ๆ มันเกิดจากอะไร
       แล้วคัดลอกข้อความในช่องขวาไปวางต่อ<strong>ในแชทเดิม</strong> กด Enter — ไม่ต้องแก้โค้ดเอง</p>
@@ -1031,7 +1241,8 @@ Give me the updated file.</pre>
         <td>บทสนทนายาวเกินไป AI จำไฟล์เดิมไม่ได้แล้ว เลยสร้างเกมใหม่ทับของเก่า — พิมพ์บอกเฉย ๆ ไม่ช่วย
           เพราะมันไม่มีไฟล์เดิมให้แก้</td>
         <td>วางโค้ดไฟล์ล่าสุดที่ยังถูกต้องกลับเข้าไปในแชทก่อน แล้วพิมพ์
-          <code>นี่คือไฟล์ปัจจุบันของผม ใช้ไฟล์นี้เป็นฐานต่อจากนี้</code> ค่อยวาง Prompt ต่อ</td>
+          <code>นี่คือไฟล์ปัจจุบันของผม ใช้ไฟล์นี้เป็นฐานต่อจากนี้</code> ค่อยวาง Prompt ต่อ
+        </td>
       </tr>
     </table>
 
